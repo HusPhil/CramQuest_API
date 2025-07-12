@@ -1,62 +1,78 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from sqlmodel import select, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
-from app.models import Player, Subject, Quest, Material
+from app.models import Player, Subject, Quest
 
 from app.schemas.subject_schema import SubjectRead, SubjectCreate, SubjectUpdate
 from app.schemas.quest_schema import QuestRead
 
 from app.exceptions.player_exceptions import PlayerNotFound
 
+
 class SubjectNotFound(HTTPException):
     def __init__(self, subject_id: int):
         super().__init__(status_code=404, detail=f"Subject {subject_id} not found")
 
+
 class SubjectAlreadyExists(HTTPException):
     def __init__(self, player_id: int):
-        super().__init__(status_code=400, detail=f"Player {player_id} already has this subject")
+        super().__init__(
+            status_code=400, detail=f"Player {player_id} already has this subject"
+        )
+
 
 class SubjectNotBelongsToPlayer(HTTPException):
     def __init__(self, subject_id: int, player_id: int):
-        super().__init__(status_code=404, detail=f"Subject {subject_id} does not belong to player {player_id}")
+        super().__init__(
+            status_code=404,
+            detail=f"Subject {subject_id} does not belong to player {player_id}",
+        )
 
 
-async def crud_create_subject(session: AsyncSession, player_id: int, new_subject: SubjectCreate) -> SubjectRead:
+async def crud_create_subject(
+    session: AsyncSession, player_id: int, new_subject: SubjectCreate
+) -> SubjectRead:
     print(f"Creating subject for player_id: {player_id}")
     print(f"New subject: {new_subject}")
     await _validate_new_subject(session, player_id, new_subject)
-    
+
     subject = Subject(
-        player_id=player_id, 
+        player_id=player_id,
         code_name=new_subject.code_name,
-        description=new_subject.description, 
-        difficulty=new_subject.difficulty
+        description=new_subject.description,
+        difficulty=new_subject.difficulty,
     )
 
     try:
-        
+
         session.add(subject)
         await session.commit()
         await session.refresh(subject)
 
         return _serialize_subject(subject)
-    
+
     except SQLAlchemyError as e:
         await session.rollback()
-        raise HTTPException(status_code=500, detail=f"An SQLAlchemy error occurred: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"An SQLAlchemy error occurred: {str(e)}"
+        )
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+
 async def crud_read_subject(session: AsyncSession, subject_id: int) -> SubjectRead:
     subject = await _get_subject_or_404(session, subject_id)
     return _serialize_subject(subject)
 
-async def crud_update_subject(session: AsyncSession, subject_id: int, updated_subject: SubjectUpdate) -> SubjectRead:
-    
+
+async def crud_update_subject(
+    session: AsyncSession, subject_id: int, updated_subject: SubjectUpdate
+) -> SubjectRead:
+
     subject = await _get_subject_or_404(session, subject_id)
-    
+
     updated_data = {}
 
     if updated_subject.code_name is not None:
@@ -79,14 +95,15 @@ async def crud_update_subject(session: AsyncSession, subject_id: int, updated_su
         await session.refresh(subject)
 
         return _serialize_subject(subject)
-    
+
     except SQLAlchemyError as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+
 async def crud_delete_subject(session: AsyncSession, subject_id: int) -> SubjectRead:
     subject = await _get_subject_or_404(session, subject_id)
 
@@ -95,16 +112,21 @@ async def crud_delete_subject(session: AsyncSession, subject_id: int) -> Subject
         await session.commit()
 
         return _serialize_subject(subject)
-    
+
     except SQLAlchemyError as e:
         await session.rollback()
-        raise HTTPException(status_code=500, detail=f"An SQLAlchemy error occurred: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"An SQLAlchemy error occurred: {str(e)}"
+        )
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-    
-async def crud_read_subject_all_quests(session: AsyncSession, subject_id: int) -> list[QuestRead]:
-    
+
+
+async def crud_read_subject_all_quests(
+    session: AsyncSession, subject_id: int
+) -> list[QuestRead]:
+
     result = await session.scalars(
         select(Quest)
         .where(Quest.subject_id == subject_id)
@@ -113,33 +135,39 @@ async def crud_read_subject_all_quests(session: AsyncSession, subject_id: int) -
 
     quests = result.all()
 
-    return [QuestRead(
-        id=quest.id,
-        subject_id=quest.subject_id,
-        description=quest.description,
-        difficulty=quest.difficulty,
-        status=quest.status,
-        created_at=quest.created_at 
-        )     
+    return [
+        QuestRead(
+            id=quest.id,
+            subject_id=quest.subject_id,
+            description=quest.description,
+            difficulty=quest.difficulty,
+            status=quest.status,
+            created_at=quest.created_at,
+        )
         for quest in quests
     ]
-    
-async def _validate_new_subject(session: AsyncSession, player_id: int, new_subject: SubjectCreate) -> None:
+
+
+async def _validate_new_subject(
+    session: AsyncSession, player_id: int, new_subject: SubjectCreate
+) -> None:
     statement = select(
         exists().where(Player.id == player_id),  # ✅ Check if Player exists
         exists().where(
-            (Subject.player_id == player_id) & (Subject.code_name == new_subject.code_name)  # ✅ Check if Subject exists
-        )
+            (Subject.player_id == player_id)
+            & (Subject.code_name == new_subject.code_name)  # ✅ Check if Subject exists
+        ),
     )
 
     result = await session.execute(statement)
     player_exists, subject_exists = result.first()
-    
+
     if not player_exists:
         raise PlayerNotFound(player_id)
-    
+
     if subject_exists:
         raise SubjectAlreadyExists(player_id)
+
 
 async def _get_subject_or_404(session: AsyncSession, subject_id: int) -> Subject:
     statement = select(Subject).where(Subject.id == subject_id)
@@ -151,14 +179,12 @@ async def _get_subject_or_404(session: AsyncSession, subject_id: int) -> Subject
 
     return subject
 
+
 def _serialize_subject(subject: Subject) -> SubjectRead:
     return SubjectRead(
-        id=subject.id, player_id=subject.player_id, 
-        code_name=subject.code_name, description=subject.description, 
-        difficulty=subject.difficulty
+        id=subject.id,
+        player_id=subject.player_id,
+        code_name=subject.code_name,
+        description=subject.description,
+        difficulty=subject.difficulty,
     )
-
-
-
-
-

@@ -87,6 +87,7 @@ async def crud_create_study_session(
             for task_description in new_study_session.tasks_to_create
         ]
 
+        tasks[0].start_time = start_time
         session.add_all(tasks)
         # flush to get task ids
         await session.flush()
@@ -137,18 +138,10 @@ async def crud_end_study_session(
 
     try:
         # ✅ Determine Outcome (Win, Defeat, or Canceled)
-        completion_rate = 0.0
-
-        number_of_accomplished_tasks = 0
         total_assigned_tasks = len(study_session.tasks)
+        actual_complete_time = datetime.now().replace(tzinfo=timezone.utc)
 
-        for task in study_session.tasks:
-            if task.end_time is not None:
-                number_of_accomplished_tasks += 1
-
-        completion_rate = number_of_accomplished_tasks / total_assigned_tasks
-
-        if completion_rate == 1.0:
+        if actual_complete_time <= study_session.end_time:
             session_status = SessionStatus.COMPLETED  # 🏆 Win (All tasks done)
         else:
             session_status = SessionStatus.DEFEAT  # ⚔️ Partial completion = Defeat
@@ -158,6 +151,7 @@ async def crud_end_study_session(
             study_session,
             study_session.quest,
             total_assigned_tasks,
+            actual_complete_time,
             session_status,
         )
 
@@ -168,7 +162,7 @@ async def crud_end_study_session(
 
         # ✅ End the study session
         study_session.status = session_status
-        study_session.actual_complete_time = datetime.now(timezone.utc)
+        study_session.actual_complete_time = actual_complete_time
         study_session.xp_earned = xp_earned
 
         await session.commit()  # Commit all changes in **one transaction**

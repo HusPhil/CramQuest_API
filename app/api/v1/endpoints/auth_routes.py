@@ -27,14 +27,18 @@ refresh_token_cookie_key = "_Host-cramquest_ssfpwrtk"
 
 router = APIRouter()
 
+
 class InvalidCredential(HTTPException):
     def __init__(self):
         super().__init__(status_code=400, detail="Invalid username or password")
 
 
 @router.post("/sign_in")
-async def sign_in(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)) -> JSONResponse:
-    
+async def sign_in(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session: Session = Depends(get_session),
+) -> JSONResponse:
+
     try:
         user = await crud_read_user_by_username(session, username=form_data.username)
     except:
@@ -42,7 +46,7 @@ async def sign_in(form_data: OAuth2PasswordRequestForm = Depends(), session: Ses
 
     if not user:
         raise InvalidCredential
-    
+
     if not Security.verify_hash(form_data.password, user.password):
         raise InvalidCredential
 
@@ -50,11 +54,20 @@ async def sign_in(form_data: OAuth2PasswordRequestForm = Depends(), session: Ses
 
     return response
 
+
 @router.post("/sign_up")
-async def sign_up(sign_up_request: SignUpRequest, session: Session = Depends(get_session)) -> JSONResponse:
+async def sign_up(
+    request: Request,
+    sign_up_request: SignUpRequest,
+    session: Session = Depends(get_session),
+) -> JSONResponse:
+    # print(sign_up_request)
+    body = await request.json()
+    print("RAW BODY:", body)
     new_user = await crud_sign_up_user(session, sign_up_request)
     response = _get_authentication_response(new_user)
-    return response 
+    return response
+
 
 @router.post("/sign_out")
 async def sign_out() -> JSONResponse:
@@ -69,6 +82,7 @@ async def sign_out() -> JSONResponse:
     )
 
     return response
+
 
 @router.post("/refresh_token")
 async def refresh_token(request: Request):
@@ -92,13 +106,15 @@ def _get_authentication_response(user: UserRead) -> JSONResponse:
     access_token = create_access_token({"sub": str(user.id)})
     refresh_token = create_refresh_token({"sub": str(user.id)})
 
-    response = JSONResponse(content={
-        "message": "Sucessfully signed in",
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "access_token": access_token,
-    })
+    response = JSONResponse(
+        content={
+            "message": "Sucessfully signed in",
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "access_token": access_token,
+        }
+    )
 
     response.set_cookie(
         key=refresh_token_cookie_key,
@@ -106,7 +122,7 @@ def _get_authentication_response(user: UserRead) -> JSONResponse:
         httponly=True,
         secure=not True,  # True in production with HTTPS
         samesite="lax",  # or "strict" or "none"
-        path="/",        # Send this cookie to all routes
+        path="/",  # Send this cookie to all routes
     )
 
     return response

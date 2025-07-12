@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 from app.models.study_session_model import SessionStatus
-from app.schemas.task_schema import TaskRead
+from app.schemas.task_schema import TaskRead, TaskTimingBatchPayload
 
 
 class StudySessionCreate(BaseModel):

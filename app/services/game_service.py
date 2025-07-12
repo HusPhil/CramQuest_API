@@ -1,4 +1,6 @@
 from datetime import datetime, timezone
+
+from requests import session
 from app.models.study_session_model import SessionStatus
 from app.models import Player, StudySession, Quest
 from sqlmodel import Session
@@ -16,21 +18,34 @@ class GameService:
     def calculate_xp(
         study_session: StudySession,
         accomplished_quest: Quest,
-        total_selected_quests: int,
+        total_assigned_tasks: int,
+        actual_complete_time: datetime,
         session_status: SessionStatus,
     ) -> int:
         """Calculate XP based on accomplished quests and session result."""
 
-        if not study_session.end_time:
-            study_session.end_time = datetime.now(timezone.utc)
-
         # ✅ Get session duration in minutes
         duration_minutes = (
+            actual_complete_time - study_session.start_time
+        ).total_seconds() / 60
+
+        # 1. Get total allotted time
+        user_allocated_minutes = (
             study_session.end_time - study_session.start_time
         ).total_seconds() / 60
-        expected_duration_minutes = (
-            total_selected_quests * 5
-        )  # Assume ~5 mins per quest
+
+        # 2. Compute per-task expected time based on total assigned tasks
+        # We assume the user evenly distributes time across tasks
+        # But we scale it if the quest difficulty is high (to be fair)
+        difficulty_factor = 1 + (
+            accomplished_quest.difficulty * 0.1
+        )  # e.g., difficulty 3 → 1.3x
+
+        per_task_expected_minutes = (
+            user_allocated_minutes / total_assigned_tasks
+        ) * difficulty_factor
+
+        expected_duration_minutes = per_task_expected_minutes * total_assigned_tasks
 
         # ✅ Base XP from accomplished quest difficulty
         base_xp = GameService.BASE_XP + (accomplished_quest.difficulty * 5)

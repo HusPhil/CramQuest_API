@@ -36,7 +36,7 @@ async def read_study_session(
     return await crud_read_study_session(session, study_session_id)
 
 
-@router.patch("/{study_session_id}/end", response_model=StudySessionRead)
+@router.post("/{study_session_id}/end", response_model=StudySessionRead)
 async def end_study_session(
     study_session_id: int,
     session: AsyncSession = Depends(get_session),
