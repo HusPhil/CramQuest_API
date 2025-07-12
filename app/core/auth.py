@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_session
 from sqlmodel import select
 from app.core.config import settings
+from sqlalchemy.orm import selectinload
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/sign_in")
@@ -49,14 +50,18 @@ async def get_current_user(
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
-        user_id: int = payload.get("sub")
-        if user_id is None:
+        print("\n\n\n\n\n\npayload sa get_current_user\n\n\n\n\n", payload)
+        user_id: int = payload.get("user_id")
+        player_id: int = payload.get("player_id")
+        if user_id is None or player_id is None:
             raise credentials_exception
     except JWTError as e:
         print("JWTError in get_current_user", e)
         raise credentials_exception
 
-    result = await session.execute(select(User).where(User.id == int(user_id)))
+    result = await session.execute(
+        select(User).options(selectinload(User.player)).where(User.id == int(user_id))
+    )
     user = result.scalar_one_or_none()
     if user is None:
         raise credentials_exception

@@ -9,7 +9,7 @@ from app.core.security import Security
 from app.core.auth import create_access_token, create_refresh_token
 
 from app.crud.player_crud import crud_create_player
-from app.schemas.player_schema import PlayerCreate
+from app.schemas.player_schema import PlayerCreate, PlayerRead
 
 from app.crud.profile_crud import crud_create_profile
 from app.schemas.profile_schema import ProfileCreate
@@ -50,7 +50,7 @@ async def sign_in(
     if not Security.verify_hash(form_data.password, user.password):
         raise InvalidCredential
 
-    response = _get_authentication_response(user)
+    response = _get_authentication_response(user, user.player)
 
     return response
 
@@ -61,9 +61,6 @@ async def sign_up(
     sign_up_request: SignUpRequest,
     session: Session = Depends(get_session),
 ) -> JSONResponse:
-    # print(sign_up_request)
-    body = await request.json()
-    print("RAW BODY:", body)
     new_user = await crud_sign_up_user(session, sign_up_request)
     response = _get_authentication_response(new_user)
     return response
@@ -92,19 +89,31 @@ async def refresh_token(request: Request):
         raise HTTPException(status_code=401, detail="Missing refresh token")
 
     try:
-        user_id = Security.verify_refresh_token(refresh_token)
+        token_verification_res = Security.verify_refresh_token(refresh_token)
+
+        user_id = token_verification_res.user_id
+        player_id = token_verification_res.player_id
+
     except ExpiredSignatureError:
         raise HTTPException(status_code=403, detail="Refresh token expired")
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
-    new_access_token = create_access_token({"sub": user_id})
-    return {"access_token": new_access_token, "user_id": int(user_id)}
+    new_access_token = create_access_token({"user_id": user_id, "player_id": player_id})
+    return {
+        "access_token": new_access_token,
+        "user_id": int(user_id),
+        "player_id": int(player_id),
+    }
 
 
-def _get_authentication_response(user: UserRead) -> JSONResponse:
-    access_token = create_access_token({"sub": str(user.id)})
-    refresh_token = create_refresh_token({"sub": str(user.id)})
+def _get_authentication_response(user: UserRead, player: PlayerRead) -> JSONResponse:
+    access_token = create_access_token(
+        {"user_id": str(user.id), "player_id": str(player.id)}
+    )
+    refresh_token = create_refresh_token(
+        {"user_id": str(user.id), "player_id": str(player.id)}
+    )
 
     response = JSONResponse(
         content={
