@@ -61,6 +61,11 @@ async def crud_read_user_player(session: AsyncSession, user_id: int) -> PlayerRe
         experience=user_player.experience,
         level=user_player.level,
         title=user_player.title,
+        next_level_xp=user_player.next_level_xp,
+        session_streak=user_player.session_streak,
+        longest_session_streak=user_player.longest_session_streak,
+        daily_streak=user_player.daily_streak,
+        longest_daily_streak=user_player.longest_daily_streak,
     )
 
 

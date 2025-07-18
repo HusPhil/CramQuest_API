@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     # DATABASE_URL: str = (
     #     f"postgresql+asyncpg://YOUR-DB-USER:YOUR-DB-PASSWORD@localhost:5437/cramquest_db"
     # )
+    # DATABASE_URL: str = (
+    #     f"postgresql+asyncpg://YOUR-DB-USER:YOUR-DB-PASSWORD@localhost:5437/cramquest_db"
+    # )
 
     SECRET_KEY: str = os.getenv(
         "SECRET_KEY", "default_secret_key"

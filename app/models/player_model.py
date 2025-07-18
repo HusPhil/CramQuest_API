@@ -2,6 +2,9 @@ from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship, Column, String, ForeignKey
 from enum import Enum
 
+from app.external.external import get_player_initial_next_lvl_xp
+
+
 if TYPE_CHECKING:
     from app.models import User, Profile, StudySession, Subject
 
@@ -31,6 +34,13 @@ class Player(SQLModel, table=True):
     )
     level: int = Field(default=1)
     experience: int = Field(default=0)
+    next_level_xp: int = Field(default=195)
+
+    session_streak: int = Field(default=0)
+    longest_session_streak: int = Field(default=0)
+
+    daily_streak: int = Field(default=0)
+    longest_daily_streak: int = Field(default=0)
 
     study_sessions: list["StudySession"] = Relationship(
         back_populates="player", sa_relationship_kwargs={"cascade": "all, delete"}

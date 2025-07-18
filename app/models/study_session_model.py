@@ -35,7 +35,8 @@ class StudySession(SQLModel, table=True):
         default=None, sa_type=DateTime(timezone=True)
     )
     status: SessionStatus = Field(default=SessionStatus.ACTIVE)
-    xp_earned: int = Field(default=0)
+    bonus_xp: int = Field(default=0)
+    base_xp: int = Field(default=0)
 
     player: "Player" = Relationship(back_populates="study_sessions")
     subject: "Subject" = Relationship(back_populates="study_sessions")

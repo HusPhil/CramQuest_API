@@ -1,18 +1,27 @@
-from datetime import datetime, timezone
+from datetime import datetime
+from typing import TypedDict
 
-from requests import session
+from app.external.external import determine_player_title
 from app.models.study_session_model import SessionStatus
 from app.models import Player, StudySession, Quest
-from sqlmodel import Session
+
+
+class XPCalculationResult(TypedDict):
+    base_xp: int
+    efficiency_bonus: int
+    total_xp: int
 
 
 class GameService:
-    BASE_XP = 100  # Minimum XP needed for level-up
-    INCREMENT = 50  # Small bonus per level
-    MULTIPLIER = 20  # Controls exponential growth
-    COMPLETION_BONUS = 30  # Extra XP for completing a session
-    DEFEAT_PENALTY = 0.5  # Reduce XP by 50% if Defeat
-    CANCELED_PENALTY = 0  # No XP for Canceled session
+    BASE_XP = 100  # Base XP for any quest
+    INCREMENT = 75  # Per level increment
+    MULTIPLIER = 20  # Exponential growth factor
+    COMPLETION_BONUS = 30  # Max efficiency bonus
+    DEFEAT_PENALTY = 0.5  # XP penalty on defeat
+    CANCELED_PENALTY = 0  # XP for canceled session
+    DIFFICULTY_TIME_FACTOR = 0.1  # % extra time per difficulty point
+    DIFFICULTY_XP_EXPONENT = 1.2  # Controls XP curve
+    DIFFICULTY_XP_SCALE = 0.1  # % extra XP per difficulty factor
 
     @staticmethod
     def calculate_xp(
@@ -21,51 +30,61 @@ class GameService:
         total_assigned_tasks: int,
         actual_complete_time: datetime,
         session_status: SessionStatus,
-    ) -> int:
-        """Calculate XP based on accomplished quests and session result."""
+    ) -> XPCalculationResult:
+        """Calculate XP based on accomplished quest and session result."""
 
-        # ✅ Get session duration in minutes
+        # Actual study time in minutes
         duration_minutes = (
             actual_complete_time - study_session.start_time
         ).total_seconds() / 60
 
-        # 1. Get total allotted time
+        # User allocated total time in minutes
         user_allocated_minutes = (
             study_session.end_time - study_session.start_time
         ).total_seconds() / 60
 
-        # 2. Compute per-task expected time based on total assigned tasks
-        # We assume the user evenly distributes time across tasks
-        # But we scale it if the quest difficulty is high (to be fair)
-        difficulty_factor = 1 + (
-            accomplished_quest.difficulty * 0.1
-        )  # e.g., difficulty 3 → 1.3x
+        # 1️⃣ Time factor: more time for higher difficulty
+        difficulty_time_factor = 1 + (
+            accomplished_quest.difficulty * GameService.DIFFICULTY_TIME_FACTOR
+        )
 
         per_task_expected_minutes = (
             user_allocated_minutes / total_assigned_tasks
-        ) * difficulty_factor
+        ) * difficulty_time_factor
 
         expected_duration_minutes = per_task_expected_minutes * total_assigned_tasks
 
-        # ✅ Base XP from accomplished quest difficulty
-        base_xp = GameService.BASE_XP + (accomplished_quest.difficulty * 5)
-
-        # ✅ Efficiency bonus if finished faster
-        efficiency_bonus = (
-            GameService.COMPLETION_BONUS
-            if duration_minutes < expected_duration_minutes
-            else 0
+        # 2️⃣ Base XP factor: scales with difficulty + allocated time
+        difficulty_xp_factor = (
+            accomplished_quest.difficulty**GameService.DIFFICULTY_XP_EXPONENT
+        )
+        time_factor = user_allocated_minutes / 60  # convert to hours
+        base_xp = int(
+            GameService.BASE_XP
+            * (1 + difficulty_xp_factor * GameService.DIFFICULTY_XP_SCALE)
+            * time_factor
         )
 
-        # ✅ Apply XP multipliers based on outcome
-        if session_status == SessionStatus.COMPLETED:
-            xp_earned = base_xp + efficiency_bonus  # Full XP
-        elif session_status == SessionStatus.DEFEAT:
-            xp_earned = int(base_xp * GameService.DEFEAT_PENALTY)  # Reduced XP
-        else:
-            xp_earned = GameService.CANCELED_PENALTY  # No XP
+        # 3️⃣ Efficiency bonus: scales up to COMPLETION_BONUS
+        efficiency_ratio = expected_duration_minutes / duration_minutes
+        scaled_efficiency = max(min(efficiency_ratio - 1, 1), 0)
+        efficiency_bonus = int(GameService.COMPLETION_BONUS * scaled_efficiency)
 
-        return max(xp_earned, 0)  # Ensure XP is never negative
+        # 4️⃣ Total XP depends on session result
+        if session_status == SessionStatus.COMPLETED:
+            total_xp = base_xp + efficiency_bonus
+        elif session_status == SessionStatus.DEFEAT:
+            total_xp = int(base_xp * GameService.DEFEAT_PENALTY)
+            efficiency_bonus = 0
+        else:
+            total_xp = GameService.CANCELED_PENALTY
+            efficiency_bonus = 0
+
+        return {
+            "base_xp": base_xp,
+            "efficiency_bonus": efficiency_bonus,
+            "total_xp": max(total_xp, 0),
+        }
 
     @staticmethod
     def next_level_xp(level: int) -> int:
@@ -75,3 +94,39 @@ class GameService:
             + (level * GameService.INCREMENT)
             + (level**1.5 * GameService.MULTIPLIER)
         )
+
+    @staticmethod
+    def level_up(player: Player, xp_gained: int) -> Player:
+        """
+        Add XP to the player and handle multiple level-ups if XP overflows.
+        Also updates player title when level crosses thresholds.
+        """
+        player.experience += xp_gained
+
+        while player.experience >= GameService.next_level_xp(player.level):
+            required_xp = GameService.next_level_xp(player.level)
+            player.experience -= required_xp
+            player.level += 1
+            player.title = determine_player_title(player.level)
+
+        player.next_level_xp = GameService.next_level_xp(player.level)
+
+        return player
+
+    def update_player_streak(player: Player, session_status: SessionStatus) -> Player:
+        """
+        Updates the player's winning streak:
+        - If session is a win → increment streak
+        - If session is a defeat or canceled → reset streak
+        - Also update longest streak if needed
+        """
+        if session_status == SessionStatus.COMPLETED:
+            player.session_streak += 1
+        else:
+            player.session_streak = 0  # defeat or canceled resets it
+
+        # ✅ Update longest streak if current streak is higher
+        if player.session_streak > player.longest_session_streak:
+            player.longest_session_streak = player.session_streak
+
+        return player

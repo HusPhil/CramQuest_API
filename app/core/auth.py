@@ -50,7 +50,6 @@ async def get_current_user(
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
-        print("\n\n\n\n\n\npayload sa get_current_user\n\n\n\n\n", payload)
         user_id: int = payload.get("user_id")
         player_id: int = payload.get("player_id")
         if user_id is None or player_id is None:

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_session
 from app.core.auth import get_current_user
+from app.models.user_model import User
 from app.schemas.study_session_schema import (
     StudySessionRead,
     StudySessionCreate,
@@ -40,5 +41,6 @@ async def read_study_session(
 async def end_study_session(
     study_session_id: int,
     session: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ):
-    return await crud_end_study_session(session, study_session_id)
+    return await crud_end_study_session(session, study_session_id, current_user)

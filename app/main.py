@@ -27,6 +27,9 @@ app.add_middleware(
         "http://localhost:5173",  # ✅ Allow local frontend during development
         "http://localhost:5173",  # ✅ Allow local frontend during development
         "http://localhost:5173",  # ✅ Allow local frontend during development
+        "http://localhost:5173",  # ✅ Allow local frontend during development
+        "http://localhost:5173",  # ✅ Allow local frontend during development
+        "http://localhost:5173",  # ✅ Allow local frontend during development
         "http://localhost:5173",
     ],
     # allow_origins=["http://localhost:5173"],

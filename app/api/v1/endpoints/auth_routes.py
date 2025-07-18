@@ -1,3 +1,4 @@
+from hmac import new
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
@@ -61,8 +62,8 @@ async def sign_up(
     sign_up_request: SignUpRequest,
     session: Session = Depends(get_session),
 ) -> JSONResponse:
-    new_user = await crud_sign_up_user(session, sign_up_request)
-    response = _get_authentication_response(new_user)
+    new_user, new_player = await crud_sign_up_user(session, sign_up_request)
+    response = _get_authentication_response(new_user, new_player)
     return response
 
 

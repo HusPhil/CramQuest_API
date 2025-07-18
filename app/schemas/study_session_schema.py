@@ -25,6 +25,7 @@ class StudySessionRead(BaseModel):
     start_time: datetime
     end_time: Optional[datetime] = None
     actual_complete_time: Optional[datetime] = None
-    xp_earned: int
+    bonus_xp: int
+    base_xp: int
     status: SessionStatus
     tasks: list[TaskRead]

@@ -7,13 +7,14 @@ from app.models import User, Player, Profile  # Adjust paths
 
 from app.core.security import Security
 
-async def crud_sign_up_user(session: AsyncSession, sign_up_data: SignUpRequest) -> UserRead:
+
+async def crud_sign_up_user(session: AsyncSession, sign_up_data: SignUpRequest) -> User:
     try:
         # Create User
         new_user = User(
             username=sign_up_data.username,
             email=sign_up_data.email,
-            password=Security.hash_string(sign_up_data.password)
+            password=Security.hash_string(sign_up_data.password),
         )
         session.add(new_user)
         await session.flush()  # populate new_user.id
@@ -24,7 +25,9 @@ async def crud_sign_up_user(session: AsyncSession, sign_up_data: SignUpRequest) 
         await session.flush()  # populate new_player.id
 
         # Create Profile
-        new_profile = Profile(player_id=new_player.id, avatar_url=sign_up_data.avatar_url)
+        new_profile = Profile(
+            player_id=new_player.id, avatar_url=sign_up_data.avatar_url
+        )
         session.add(new_profile)
 
         # Finalize
@@ -33,11 +36,7 @@ async def crud_sign_up_user(session: AsyncSession, sign_up_data: SignUpRequest) 
 
         print("\n\n\n\n\n\n\nSUCESSFULL REGISTRATION\n\n\n\n\n\n\n")
 
-        return UserRead(
-            id=new_user.id,
-            username=new_user.username,
-            email=new_user.email
-        )  # or _serialize_user(new_user)
+        return (new_user, new_player)
 
     except IntegrityError as e:
         await session.rollback()

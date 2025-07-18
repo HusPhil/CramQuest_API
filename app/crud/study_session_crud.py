@@ -8,6 +8,7 @@ from app.models.quest_model import QuestStatus
 from app.models.study_session_model import SessionStatus
 
 from app.crud.subject_crud import SubjectNotFound, SubjectNotBelongsToPlayer
+from app.models.user_model import User
 from app.schemas.study_session_schema import (
     StudySessionRead,
     StudySessionCreate,
@@ -74,6 +75,8 @@ async def crud_create_study_session(
         subject_id=new_study_session.subject_id,
         start_time=start_time,
         end_time=end_time,
+        bonus_xp=0,
+        base_xp=0,
     )
 
     try:
@@ -119,7 +122,7 @@ async def crud_read_all_study_sessions(session: AsyncSession) -> list[StudySessi
 
 
 async def crud_end_study_session(
-    session: AsyncSession, study_session_id: int
+    session: AsyncSession, study_session_id: int, current_user: User
 ) -> StudySessionRead:
     """Ends a study session, calculates XP, determines outcome, and removes accomplished quests."""
 
@@ -155,22 +158,27 @@ async def crud_end_study_session(
             session_status,
         )
 
-        print("\n\n\n\n\n\nxp_earned:", xp_earned, "\n\n\n\n\n\n")
-
         # ✅ set the quest status to completed
         study_session.quest.status = QuestStatus.COMPLETED
 
         # ✅ End the study session
         study_session.status = session_status
         study_session.actual_complete_time = actual_complete_time
-        study_session.xp_earned = xp_earned
+        study_session.base_xp = xp_earned.get("base_xp", 0)
+        study_session.bonus_xp = xp_earned.get("efficiency_bonus", 0)
+
+        player = await session.get(Player, current_user.player.id)
+
+        GameService.level_up(player, xp_earned.get("total_xp", 0))
+        GameService.update_player_streak(player, session_status)
 
         await session.commit()  # Commit all changes in **one transaction**
 
         return _serialize_study_session(study_session)
 
     except Exception as e:
-        session.rollback()  # Rollback changes on error
+        await session.rollback()  # Rollback changes on error
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to end study session: {str(e)}",
@@ -277,7 +285,8 @@ def _serialize_study_session(
         start_time=study_session.start_time,
         actual_complete_time=study_session.actual_complete_time,
         end_time=study_session.end_time,
-        xp_earned=study_session.xp_earned,
+        bonus_xp=study_session.bonus_xp,
+        base_xp=study_session.base_xp,
         status=study_session.status,
         tasks=[
             TaskRead(
