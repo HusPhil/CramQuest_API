@@ -1,26 +1,23 @@
-from hmac import new
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
 from sqlmodel import Session
 
-from app.core.config import settings
 from app.core.database import get_session
 from app.core.security import Security
 from app.core.auth import create_access_token, create_refresh_token
 
-from app.crud.player_crud import crud_create_player
-from app.schemas.player_schema import PlayerCreate, PlayerRead
+from app.models.user_model import User
+from app.schemas.player_schema import PlayerRead
 
-from app.crud.profile_crud import crud_create_profile
-from app.schemas.profile_schema import ProfileCreate
+from app.schemas.profile_schema import ProfileRead
 
 from app.crud.auth_crud import crud_sign_up_user
-from app.schemas.auth_schema import SignUpRequest
+from app.schemas.auth_schema import RefreshTokenResponse, SignUpRequest
 
-from app.crud.user_crud import crud_read_user_by_username, crud_create_user
-from app.models.user_model import User
+from app.crud.user_crud import crud_read_user_by_username, crud_read_user_complete_info
 from app.schemas.user_schema import UserRead
+
 
 from jose import JWTError, ExpiredSignatureError
 
@@ -42,6 +39,7 @@ async def sign_in(
 
     try:
         user = await crud_read_user_by_username(session, username=form_data.username)
+
     except:
         raise InvalidCredential
 
@@ -82,8 +80,8 @@ async def sign_out() -> JSONResponse:
     return response
 
 
-@router.post("/refresh_token")
-async def refresh_token(request: Request):
+@router.post("/refresh_session")
+async def refresh_session(request: Request, session: Session = Depends(get_session)):
     refresh_token = request.cookies.get(refresh_token_cookie_key)
 
     if not refresh_token:
@@ -95,23 +93,30 @@ async def refresh_token(request: Request):
         user_id = token_verification_res.user_id
         player_id = token_verification_res.player_id
 
+        user_complete_info = await crud_read_user_complete_info(session, int(user_id))
+        print(user_complete_info)
+
     except ExpiredSignatureError:
         raise HTTPException(status_code=403, detail="Refresh token expired")
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     new_access_token = create_access_token({"user_id": user_id, "player_id": player_id})
-    return {
-        "access_token": new_access_token,
-        "user_id": int(user_id),
-        "player_id": int(player_id),
-    }
+
+    user_session_info, player_session_info, profile_session_info = build_user_bundle(
+        user_complete_info
+    )
+
+    return RefreshTokenResponse(
+        access_token=new_access_token,
+        user_session_info=user_session_info,
+        player_session_info=player_session_info,
+        profile_session_info=profile_session_info,
+    )
 
 
 def _get_authentication_response(user: UserRead, player: PlayerRead) -> JSONResponse:
-    access_token = create_access_token(
-        {"user_id": str(user.id), "player_id": str(player.id)}
-    )
+
     refresh_token = create_refresh_token(
         {"user_id": str(user.id), "player_id": str(player.id)}
     )
@@ -122,7 +127,6 @@ def _get_authentication_response(user: UserRead, player: PlayerRead) -> JSONResp
             "id": user.id,
             "username": user.username,
             "email": user.email,
-            "access_token": access_token,
         }
     )
 
@@ -136,3 +140,42 @@ def _get_authentication_response(user: UserRead, player: PlayerRead) -> JSONResp
     )
 
     return response
+
+
+def _build_user_bundle(user_complete_info: User):
+    from app.schemas import UserRead, PlayerRead, ProfileRead
+
+
+def build_user_bundle(user_complete_info):
+    """Bundle User, Player, and Profile Read schemas."""
+
+    user_read = UserRead(
+        id=user_complete_info.id,
+        email=user_complete_info.email,
+        username=user_complete_info.username,
+        is_admin=user_complete_info.is_admin,
+        is_active=user_complete_info.is_active,
+    )
+
+    player_read = PlayerRead(
+        id=user_complete_info.player.id,
+        user_id=user_complete_info.player.user_id,
+        level=user_complete_info.player.level,
+        experience=user_complete_info.player.experience,
+        next_level_xp=user_complete_info.player.next_level_xp,
+        title=user_complete_info.player.title,
+        daily_streak=user_complete_info.player.daily_streak,
+        session_streak=user_complete_info.player.session_streak,
+        longest_daily_streak=user_complete_info.player.longest_daily_streak,
+        longest_session_streak=user_complete_info.player.longest_session_streak,
+    )
+
+    profile_read = ProfileRead(
+        id=user_complete_info.player.profile.id,
+        player_id=user_complete_info.player.profile.player_id,
+        avatar_url=user_complete_info.player.profile.avatar_url,
+        bio=user_complete_info.player.profile.bio,
+        mood=user_complete_info.player.profile.mood,
+    )
+
+    return user_read, player_read, profile_read

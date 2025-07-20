@@ -4,6 +4,7 @@ from app.core.database import get_session
 from app.core.auth import get_current_user
 from app.models.user_model import User
 from app.schemas.study_session_schema import (
+    StudySessionEnd,
     StudySessionRead,
     StudySessionCreate,
 )
@@ -37,7 +38,7 @@ async def read_study_session(
     return await crud_read_study_session(session, study_session_id)
 
 
-@router.post("/{study_session_id}/end", response_model=StudySessionRead)
+@router.post("/{study_session_id}/end", response_model=StudySessionEnd)
 async def end_study_session(
     study_session_id: int,
     session: AsyncSession = Depends(get_session),

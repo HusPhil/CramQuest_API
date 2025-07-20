@@ -10,6 +10,7 @@ from app.models.study_session_model import SessionStatus
 from app.crud.subject_crud import SubjectNotFound, SubjectNotBelongsToPlayer
 from app.models.user_model import User
 from app.schemas.study_session_schema import (
+    StudySessionEnd,
     StudySessionRead,
     StudySessionCreate,
 )
@@ -123,7 +124,7 @@ async def crud_read_all_study_sessions(session: AsyncSession) -> list[StudySessi
 
 async def crud_end_study_session(
     session: AsyncSession, study_session_id: int, current_user: User
-) -> StudySessionRead:
+) -> StudySessionEnd:
     """Ends a study session, calculates XP, determines outcome, and removes accomplished quests."""
 
     # ✅ Fetch StudySession and validate existence in a **single query**
@@ -159,7 +160,7 @@ async def crud_end_study_session(
         )
 
         # ✅ set the quest status to completed
-        study_session.quest.status = QuestStatus.COMPLETED
+        study_session.quest.status = QuestStatus.DONE
 
         # ✅ End the study session
         study_session.status = session_status
@@ -174,7 +175,13 @@ async def crud_end_study_session(
 
         await session.commit()  # Commit all changes in **one transaction**
 
-        return _serialize_study_session(study_session)
+        session_end_result = StudySessionEnd(
+            **_serialize_study_session(study_session, study_session.tasks).model_dump(),
+            longest_session_streak=player.longest_session_streak,
+            session_streak=player.session_streak,
+        )
+
+        return session_end_result
 
     except Exception as e:
         await session.rollback()  # Rollback changes on error

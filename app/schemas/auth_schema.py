@@ -3,6 +3,10 @@ from app.models.player_model import PlayerTitle
 from app.models.profile_model import Mood
 from typing import Optional
 
+from app.schemas.player_schema import PlayerRead
+from app.schemas.profile_schema import ProfileRead
+from app.schemas.user_schema import UserRead
+
 
 class SignUpRequest(BaseModel):
     username: str = Field(
@@ -44,3 +48,10 @@ class AuthenticationResponse(BaseModel):
     player: PlayerInfo
     profile: ProfileInfo
     access_token: str
+
+
+class RefreshTokenResponse(BaseModel):
+    access_token: str
+    user_session_info: UserRead
+    player_session_info: PlayerRead
+    profile_session_info: ProfileRead

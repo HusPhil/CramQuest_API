@@ -20,6 +20,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",  # ✅ Allow local frontend during development
+        "http://localhost:3000",  # ✅ Allow local frontend during development
         "http://localhost:5173",  # ✅ Allow local frontend during development
         "http://localhost:5173",  # ✅ Allow local frontend during development
         "http://localhost:5173",  # ✅ Allow local frontend during development

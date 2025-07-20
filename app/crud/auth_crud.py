@@ -34,8 +34,6 @@ async def crud_sign_up_user(session: AsyncSession, sign_up_data: SignUpRequest) 
         await session.commit()
         await session.refresh(new_user)
 
-        print("\n\n\n\n\n\n\nSUCESSFULL REGISTRATION\n\n\n\n\n\n\n")
-
         return (new_user, new_player)
 
     except IntegrityError as e:

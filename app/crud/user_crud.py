@@ -3,7 +3,7 @@ from sqlmodel import select
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from app.models import User, Player
+from app.models import User, Player, Profile
 from app.core.security import Security
 from app.schemas.user_schema import UserRead, UserUpdate, UserCreate, UserPlayerRead
 from app.schemas.player_schema import PlayerRead
@@ -74,6 +74,23 @@ async def crud_read_user_by_username(session: AsyncSession, username: str) -> Us
 
     result = await session.execute(
         select(User).options(selectinload(User.player)).where(User.username == username)
+    )
+
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise UserNotFound
+
+    return user
+
+
+async def crud_read_user_complete_info(session: AsyncSession, user_id: int) -> User:
+    """used in authentication"""
+
+    result = await session.execute(
+        select(User)
+        .options(selectinload(User.player).selectinload(Player.profile))
+        .where(User.id == user_id)
     )
 
     user = result.scalar_one_or_none()

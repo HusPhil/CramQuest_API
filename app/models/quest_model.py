@@ -18,8 +18,9 @@ if TYPE_CHECKING:
 
 
 class QuestStatus(str, Enum):  # Ensure it stores properly in DB
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
+    TO_DO = "to_do"
+    DOING = "in_progress"
+    DONE = "completed"
 
 
 class Quest(SQLModel, table=True):
@@ -34,7 +35,7 @@ class Quest(SQLModel, table=True):
     difficulty: int = Field(sa_column=Column(Integer, nullable=False), ge=1, le=5)
 
     status: QuestStatus = Field(
-        sa_column=Column(String, nullable=False), default=QuestStatus.IN_PROGRESS
+        sa_column=Column(String, nullable=False), default=QuestStatus.DOING
     )
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),

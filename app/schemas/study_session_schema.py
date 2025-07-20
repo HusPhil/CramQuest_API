@@ -29,3 +29,10 @@ class StudySessionRead(BaseModel):
     base_xp: int
     status: SessionStatus
     tasks: list[TaskRead]
+
+
+class StudySessionEnd(StudySessionRead):
+    """Schema for ending a study session."""
+
+    session_streak: int
+    longest_session_streak: int
