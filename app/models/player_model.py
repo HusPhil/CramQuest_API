@@ -1,4 +1,6 @@
+from datetime import date
 from typing import Optional, TYPE_CHECKING
+from sqlalchemy import Date
 from sqlmodel import SQLModel, Field, Relationship, Column, String, ForeignKey
 from enum import Enum
 
@@ -6,7 +8,7 @@ from app.external.external import get_player_initial_next_lvl_xp
 
 
 if TYPE_CHECKING:
-    from app.models import User, Profile, StudySession, Subject
+    from app.models import User, Profile, StudySession, Subject, WeeklyCheckIn
 
 
 class PlayerTitle(str, Enum):
@@ -42,6 +44,12 @@ class Player(SQLModel, table=True):
     daily_streak: int = Field(default=0)
     longest_daily_streak: int = Field(default=0)
 
+    weekly_streak: int = Field(default=0)
+    longest_weekly_streak: int = Field(default=0)
+
+    last_checkin_date: date = Field(sa_column=Column(Date, nullable=True))
+    last_week_checkin_date: date = Field(sa_column=Column(Date, nullable=True))
+
     study_sessions: list["StudySession"] = Relationship(
         back_populates="player", sa_relationship_kwargs={"cascade": "all, delete"}
     )
@@ -50,5 +58,8 @@ class Player(SQLModel, table=True):
         back_populates="player", sa_relationship_kwargs={"cascade": "all, delete"}
     )
     subjects: list["Subject"] = Relationship(
+        back_populates="player", sa_relationship_kwargs={"cascade": "all, delete"}
+    )
+    weekly_checkins: list["WeeklyCheckIn"] = Relationship(
         back_populates="player", sa_relationship_kwargs={"cascade": "all, delete"}
     )

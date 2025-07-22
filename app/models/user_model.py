@@ -17,7 +17,3 @@ class User(Base, table=True):
     player: Optional["Player"] = Relationship(
         back_populates="user", sa_relationship_kwargs={"cascade": "all, delete"}
     )
-
-    weekly_checkins: List["WeeklyCheckIn"] = Relationship(
-        back_populates="user", sa_relationship_kwargs={"cascade": "all, delete"}
-    )

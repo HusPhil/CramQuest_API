@@ -4,16 +4,16 @@ from sqlmodel import Relationship, SQLModel, Field, Column, ForeignKey
 from sqlalchemy import Boolean, Date
 
 if TYPE_CHECKING:
-    from app.models import User
+    from app.models import Player
 
 
 class WeeklyCheckIn(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    user_id: int = Field(
+    player_id: int = Field(
         sa_column=Column(
-            ForeignKey("user.id", ondelete="CASCADE"),
+            ForeignKey("player.id", ondelete="CASCADE"),
             nullable=False,
             index=True,
         )
@@ -29,4 +29,4 @@ class WeeklyCheckIn(SQLModel, table=True):
     sat: bool = Field(sa_column=Column(Boolean, nullable=False, default=False))
     sun: bool = Field(sa_column=Column(Boolean, nullable=False, default=False))
 
-    user: Optional["User"] = Relationship(back_populates="weekly_checkins")
+    player: Optional["Player"] = Relationship(back_populates="weekly_checkins")

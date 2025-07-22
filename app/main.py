@@ -10,6 +10,7 @@ from app.api.v1.endpoints import (
     subject_routes,
     study_session_routes,
     quest_routes,
+    weekly_checkin_routes,
 )
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -61,6 +62,9 @@ app.include_router(
 )
 app.include_router(quest_routes.router, prefix="/quests", tags=["quests"])
 app.include_router(task_router.router, prefix="/tasks", tags=["tasks"])
+app.include_router(
+    weekly_checkin_routes.router, prefix="/weekly_check_in", tags=["weekly_check_in"]
+)
 
 
 app.include_router(test_routes.router, prefix="/tests", tags=["tests"])
