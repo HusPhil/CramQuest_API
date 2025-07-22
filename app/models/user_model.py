@@ -1,9 +1,9 @@
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, List
 from sqlmodel import Field, Relationship
 from app.models.base import Base
 
 if TYPE_CHECKING:
-    from app.models import Player
+    from app.models import Player, WeeklyCheckIn
 
 
 class User(Base, table=True):
@@ -15,5 +15,9 @@ class User(Base, table=True):
     is_admin: bool = Field(default=False)
 
     player: Optional["Player"] = Relationship(
+        back_populates="user", sa_relationship_kwargs={"cascade": "all, delete"}
+    )
+
+    weekly_checkins: List["WeeklyCheckIn"] = Relationship(
         back_populates="user", sa_relationship_kwargs={"cascade": "all, delete"}
     )

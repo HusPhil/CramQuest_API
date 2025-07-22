@@ -1,22 +1,25 @@
-from typing import Optional
-from sqlmodel import SQLModel, Field, Column, ForeignKey
+from datetime import date
+from typing import TYPE_CHECKING, Optional
+from sqlmodel import Relationship, SQLModel, Field, Column, ForeignKey
 from sqlalchemy import Boolean, Date
+
+if TYPE_CHECKING:
+    from app.models import User
 
 
 class WeeklyCheckIn(SQLModel, table=True):
-    __tablename__ = "weekly_checkins"
 
     id: Optional[int] = Field(default=None, primary_key=True)
 
     user_id: int = Field(
         sa_column=Column(
-            ForeignKey("users.id", ondelete="CASCADE"),
+            ForeignKey("user.id", ondelete="CASCADE"),
             nullable=False,
             index=True,
         )
     )
 
-    week_start_date: Date = Field(sa_column=Column(Date, nullable=False))
+    week_start_date: date = Field(sa_column=Column(Date, nullable=False))
 
     mon: bool = Field(sa_column=Column(Boolean, nullable=False, default=False))
     tue: bool = Field(sa_column=Column(Boolean, nullable=False, default=False))
@@ -25,3 +28,5 @@ class WeeklyCheckIn(SQLModel, table=True):
     fri: bool = Field(sa_column=Column(Boolean, nullable=False, default=False))
     sat: bool = Field(sa_column=Column(Boolean, nullable=False, default=False))
     sun: bool = Field(sa_column=Column(Boolean, nullable=False, default=False))
+
+    user: Optional["User"] = Relationship(back_populates="weekly_checkins")
