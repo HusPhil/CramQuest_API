@@ -3,6 +3,8 @@ from typing import Optional
 from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from jwt import ExpiredSignatureError
+from webob import second
 from app.models import User
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_session
@@ -37,6 +39,9 @@ def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
     )
 
 
+from jwt.exceptions import ExpiredSignatureError
+
+
 async def get_current_user(
     token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(get_session)
 ) -> User:
@@ -46,6 +51,14 @@ async def get_current_user(
         detail="Invalid authentication credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+    # Specific exception for expired tokens
+    expired_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Token has expired",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
@@ -54,6 +67,9 @@ async def get_current_user(
         player_id: int = payload.get("player_id")
         if user_id is None or player_id is None:
             raise credentials_exception
+    except ExpiredSignatureError:
+        print("Token expired in get_current_user")
+        raise expired_exception
     except JWTError as e:
         print("JWTError in get_current_user", e)
         raise credentials_exception

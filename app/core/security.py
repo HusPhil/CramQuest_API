@@ -1,5 +1,5 @@
 import bcrypt
-from jose import JWTError, jwt
+from jose import JWTError, jwt, ExpiredSignatureError
 from pydantic import BaseModel
 from app.core.config import settings
 from fastapi import HTTPException
@@ -36,6 +36,10 @@ class Security:
             if user_id is None or player_id is None:
                 raise HTTPException(status_code=401, detail="Invalid refresh token")
             return TokenVerificationResult(user_id=user_id, player_id=player_id)
-        except JWTError:
-            print("JWTError:", JWTError)
+        except ExpiredSignatureError:
+            # Don't re-raise ExpiredSignatureError, raise HTTPException instead
+            print("Refresh token has expired")
+            raise HTTPException(status_code=401, detail="Session expired")
+        except JWTError as e:  # Catch the actual exception instance
+            print("JWTError:", e)  # Log the actual error, not the class
             raise HTTPException(status_code=401, detail="Invalid refresh token")

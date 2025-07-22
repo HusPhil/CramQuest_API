@@ -41,4 +41,7 @@ class StudySession(SQLModel, table=True):
     player: "Player" = Relationship(back_populates="study_sessions")
     subject: "Subject" = Relationship(back_populates="study_sessions")
     quest: "Quest" = Relationship(back_populates="study_sessions")
-    tasks: list["Task"] = Relationship(back_populates="study_session")
+    tasks: list["Task"] = Relationship(
+        back_populates="study_session",
+        sa_relationship_kwargs={"cascade": "all, delete"},
+    )

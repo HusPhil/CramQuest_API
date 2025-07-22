@@ -5,12 +5,23 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.core.config import settings 
+from app.core.config import settings
 from app.core.database import engine  # ✅ Import your database engine
 from sqlmodel import SQLModel
-from app.models import user_model, player_model, profile_model, subject_model, study_session_model, quest_model, material_model, task_model
+from app.models import (
+    user_model,
+    player_model,
+    profile_model,
+    subject_model,
+    study_session_model,
+    quest_model,
+    material_model,
+    task_model,
+    weekly_checkin_model,
+)
 
 import asyncio
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -60,12 +71,11 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
+
 def do_migrations(connection):
     """Runs migrations using a sync connection inside an async context."""
     context.configure(
-        connection=connection,
-        target_metadata=target_metadata,
-        compare_type=True
+        connection=connection, target_metadata=target_metadata, compare_type=True
     )
     with context.begin_transaction():
         context.run_migrations()

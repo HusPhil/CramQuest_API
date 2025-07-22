@@ -1,3 +1,4 @@
+from os import access
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
@@ -97,8 +98,10 @@ async def refresh_session(request: Request, session: Session = Depends(get_sessi
         print(user_complete_info)
 
     except ExpiredSignatureError:
+        print("ExpiredSignatureError")
         raise HTTPException(status_code=403, detail="Refresh token expired")
     except JWTError:
+        print("JWTError")
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     new_access_token = create_access_token({"user_id": user_id, "player_id": player_id})
@@ -121,8 +124,13 @@ def _get_authentication_response(user: UserRead, player: PlayerRead) -> JSONResp
         {"user_id": str(user.id), "player_id": str(player.id)}
     )
 
+    access_token = (
+        create_access_token({"user_id": str(user.id), "player_id": str(player.id)}),
+    )
+
     response = JSONResponse(
         content={
+            "access_token": access_token,
             "message": "Sucessfully signed in",
             "id": user.id,
             "username": user.username,

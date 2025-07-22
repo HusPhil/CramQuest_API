@@ -8,6 +8,7 @@ class QuestStatus(str, Enum):
     TO_DO = "to_do"
     DOING = "doing"
     DONE = "done"
+    ARCHIVE = "archive"
 
 
 class QuestBase(BaseModel):

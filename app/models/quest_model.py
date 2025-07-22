@@ -11,16 +11,11 @@ from sqlmodel import (
     Integer,
 )
 from datetime import datetime, timezone
+from app.schemas.quest_schema import QuestStatus
 
 
 if TYPE_CHECKING:
     from app.models import Subject, StudySession
-
-
-class QuestStatus(str, Enum):  # Ensure it stores properly in DB
-    TO_DO = "to_do"
-    DOING = "in_progress"
-    DONE = "completed"
 
 
 class Quest(SQLModel, table=True):

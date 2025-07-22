@@ -19,7 +19,10 @@ class Subject(SQLModel, table=True):
     difficulty: int = Field(sa_column=Column(Integer, nullable=False), ge=1, le=5)
 
     player: Optional["Player"] = Relationship(back_populates="subjects")
-    study_sessions: List["StudySession"] = Relationship(back_populates="subject")
+    study_sessions: List["StudySession"] = Relationship(
+        back_populates="subject",
+        sa_relationship_kwargs={"cascade": "all, delete"},
+    )
     quests: List["Quest"] = Relationship(
         back_populates="subject", sa_relationship_kwargs={"cascade": "all, delete"}
     )
