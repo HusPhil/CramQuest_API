@@ -1,4 +1,6 @@
+from datetime import date
 from pydantic import BaseModel, Field
+from webob import week
 from app.models.player_model import PlayerTitle
 from typing import Optional
 
@@ -12,6 +14,10 @@ class PlayerBase(BaseModel):
     longest_session_streak: int
     daily_streak: int
     longest_daily_streak: int
+    weekly_streak: int
+    longest_weekly_streak: int
+    last_checkin_date: Optional[date]
+    last_week_checkin_date: Optional[date]
 
 
 class PlayerCreate(BaseModel):

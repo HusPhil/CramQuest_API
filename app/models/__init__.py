@@ -7,3 +7,4 @@ from app.models.user_model import User
 from app.models.material_model import Material
 from app.models.task_model import Task
 from app.models.weekly_checkin_model import WeeklyCheckIn
+from app.models.boss_battle_status_model import BossBattleStatus

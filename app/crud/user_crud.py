@@ -66,6 +66,10 @@ async def crud_read_user_player(session: AsyncSession, user_id: int) -> PlayerRe
         longest_session_streak=user_player.longest_session_streak,
         daily_streak=user_player.daily_streak,
         longest_daily_streak=user_player.longest_daily_streak,
+        weekly_streak=user_player.weekly_streak,
+        longest_weekly_streak=user_player.longest_weekly_streak,
+        last_checkin_date=user_player.last_checkin_date,
+        last_week_checkin_date=user_player.last_week_checkin_date,
     )
 
 

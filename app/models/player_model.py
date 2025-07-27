@@ -8,7 +8,14 @@ from app.external.external import get_player_initial_next_lvl_xp
 
 
 if TYPE_CHECKING:
-    from app.models import User, Profile, StudySession, Subject, WeeklyCheckIn
+    from app.models import (
+        User,
+        Profile,
+        StudySession,
+        Subject,
+        WeeklyCheckIn,
+        BossBattleStatus,
+    )
 
 
 class PlayerTitle(str, Enum):
@@ -61,5 +68,8 @@ class Player(SQLModel, table=True):
         back_populates="player", sa_relationship_kwargs={"cascade": "all, delete"}
     )
     weekly_checkins: list["WeeklyCheckIn"] = Relationship(
+        back_populates="player", sa_relationship_kwargs={"cascade": "all, delete"}
+    )
+    boss_battle_statuses: list["BossBattleStatus"] = Relationship(
         back_populates="player", sa_relationship_kwargs={"cascade": "all, delete"}
     )

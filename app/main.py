@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.core.database import create_db_and_tables
 from app.api.v1.endpoints import (
+    boss_battle_status_routes,
     task_router,
     user_routes,
     player_routes,
@@ -64,6 +65,11 @@ app.include_router(quest_routes.router, prefix="/quests", tags=["quests"])
 app.include_router(task_router.router, prefix="/tasks", tags=["tasks"])
 app.include_router(
     weekly_checkin_routes.router, prefix="/weekly_check_in", tags=["weekly_check_in"]
+)
+app.include_router(
+    boss_battle_status_routes.router,
+    prefix="/boss_battle_status",
+    tags=["boss_battle_status"],
 )
 
 

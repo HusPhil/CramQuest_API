@@ -150,11 +150,7 @@ def _get_authentication_response(user: UserRead, player: PlayerRead) -> JSONResp
     return response
 
 
-def _build_user_bundle(user_complete_info: User):
-    from app.schemas import UserRead, PlayerRead, ProfileRead
-
-
-def build_user_bundle(user_complete_info):
+def build_user_bundle(user_complete_info: User):
     """Bundle User, Player, and Profile Read schemas."""
 
     user_read = UserRead(
@@ -176,6 +172,10 @@ def build_user_bundle(user_complete_info):
         session_streak=user_complete_info.player.session_streak,
         longest_daily_streak=user_complete_info.player.longest_daily_streak,
         longest_session_streak=user_complete_info.player.longest_session_streak,
+        weekly_streak=user_complete_info.player.weekly_streak,
+        longest_weekly_streak=user_complete_info.player.longest_weekly_streak,
+        last_checkin_date=user_complete_info.player.last_checkin_date,
+        last_week_checkin_date=user_complete_info.player.last_week_checkin_date,
     )
 
     profile_read = ProfileRead(

@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 
 class QuestStatus(str, Enum):
-    TO_DO = "to_do"
+    TO_DO = "todo"
     DOING = "doing"
     DONE = "done"
     ARCHIVE = "archive"

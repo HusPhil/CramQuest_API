@@ -18,6 +18,7 @@ from app.models import (
     material_model,
     task_model,
     weekly_checkin_model,
+    player_boss_status_model,
 )
 
 import asyncio
