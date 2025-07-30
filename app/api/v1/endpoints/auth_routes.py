@@ -40,6 +40,7 @@ async def sign_in(
 
     try:
         user = await crud_read_user_by_username(session, username=form_data.username)
+        print(user)
 
     except:
         raise InvalidCredential
@@ -168,6 +169,7 @@ def build_user_bundle(user_complete_info: User):
         experience=user_complete_info.player.experience,
         next_level_xp=user_complete_info.player.next_level_xp,
         title=user_complete_info.player.title,
+        boss_availability_counter=user_complete_info.player.boss_availability_counter,
         daily_streak=user_complete_info.player.daily_streak,
         session_streak=user_complete_info.player.session_streak,
         longest_daily_streak=user_complete_info.player.longest_daily_streak,

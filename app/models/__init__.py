@@ -8,3 +8,5 @@ from app.models.material_model import Material
 from app.models.task_model import Task
 from app.models.weekly_checkin_model import WeeklyCheckIn
 from app.models.boss_battle_status_model import BossBattleStatus
+from app.models.player_inventory_item_model import PlayerInventoryItem
+from app.models.reward_model import Reward

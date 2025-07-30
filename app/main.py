@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from app.core.database import create_db_and_tables
 from app.api.v1.endpoints import (
     boss_battle_status_routes,
+    player_inventory_item_routes,
     task_router,
     user_routes,
     player_routes,
@@ -70,6 +71,11 @@ app.include_router(
     boss_battle_status_routes.router,
     prefix="/boss_battle_status",
     tags=["boss_battle_status"],
+)
+app.include_router(
+    player_inventory_item_routes.router,
+    prefix="/player_inventory_item_routes",
+    tags=["player_inventory_item_routes"],
 )
 
 

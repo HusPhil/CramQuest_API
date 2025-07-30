@@ -18,7 +18,9 @@ from app.models import (
     material_model,
     task_model,
     weekly_checkin_model,
-    player_boss_status_model,
+    boss_battle_status_model,
+    player_inventory_item_model,
+    reward_model,
 )
 
 import asyncio
