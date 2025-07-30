@@ -5,6 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Player, User, Profile
 
+from app.models.boss_battle_status_model import BossBattleStatus
+from app.schemas.boss_battle_status_schema import BossBattleStatusRead
 from app.schemas.player_schema import PlayerRead, PlayerCreate
 from app.schemas.subject_schema import SubjectRead
 from app.schemas.profile_schema import ProfileRead
@@ -76,6 +78,19 @@ async def crud_read_all_players_with_users(session: AsyncSession) -> List[Player
     players_with_users = [_serialize_player(player) for player in players]
 
     return players_with_users  # Return List[PlayerRead]
+
+
+async def crud_read_player_boss_availability_counter(
+    session: AsyncSession, player_id: int
+) -> int:
+    statement = select(Player.boss_availability_counter).where(Player.id == player_id)
+    result = await session.execute(statement)
+    counter = result.scalar_one_or_none()
+
+    if counter is None:
+        raise PlayerNotFound(player_id)
+
+    return counter
 
 
 async def crud_read_all_player_subjects(
@@ -161,10 +176,12 @@ async def _get_user_and_player_or_error(
 def _serialize_player(player: Player) -> PlayerRead:
     return PlayerRead(
         id=player.id,
-        user_id=player.user_id,
         title=player.title,
+        user_id=player.user_id,
         level=player.level,
+        next_level_xp=player.next_level_xp,
         experience=player.experience,
+        boss_availability_counter=player.boss_availability_counter,
         daily_streak=player.daily_streak,
         session_streak=player.session_streak,
         longest_daily_streak=player.longest_daily_streak,
@@ -172,6 +189,5 @@ def _serialize_player(player: Player) -> PlayerRead:
         last_checkin_date=player.last_checkin_date,
         last_week_checkin_date=player.last_week_checkin_date,
         longest_weekly_streak=player.longest_weekly_streak,
-        next_level_xp=player.next_level_xp,
         weekly_streak=player.weekly_streak,
     )

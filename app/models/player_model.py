@@ -4,8 +4,6 @@ from sqlalchemy import Date
 from sqlmodel import SQLModel, Field, Relationship, Column, String, ForeignKey
 from enum import Enum
 
-from app.external.external import get_player_initial_next_lvl_xp
-
 
 if TYPE_CHECKING:
     from app.models import (
@@ -15,6 +13,7 @@ if TYPE_CHECKING:
         Subject,
         WeeklyCheckIn,
         BossBattleStatus,
+        PlayerInventoryItem,
     )
 
 
@@ -45,6 +44,8 @@ class Player(SQLModel, table=True):
     experience: int = Field(default=0)
     next_level_xp: int = Field(default=195)
 
+    boss_availability_counter: int = Field(default=0)
+
     session_streak: int = Field(default=0)
     longest_session_streak: int = Field(default=0)
 
@@ -73,3 +74,4 @@ class Player(SQLModel, table=True):
     boss_battle_statuses: list["BossBattleStatus"] = Relationship(
         back_populates="player", sa_relationship_kwargs={"cascade": "all, delete"}
     )
+    inventory_items: list["PlayerInventoryItem"] = Relationship(back_populates="player")

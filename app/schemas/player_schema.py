@@ -10,12 +10,18 @@ class PlayerBase(BaseModel):
     level: int
     experience: int
     next_level_xp: int
+
+    boss_availability_counter: int
+
     session_streak: int
     longest_session_streak: int
+
     daily_streak: int
     longest_daily_streak: int
+
     weekly_streak: int
     longest_weekly_streak: int
+
     last_checkin_date: Optional[date]
     last_week_checkin_date: Optional[date]
 
