@@ -2,8 +2,9 @@ from typing import Optional
 from sqlmodel import select, exists, and_, delete
 from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
-from app.models import StudySession, Player, Subject, Quest, Task
+from app.models import StudySession, Player, Subject, Quest, Task, BossBattleStatus
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.models.boss_battle_status_model import BossBattleStatusState
 from app.models.quest_model import QuestStatus
 from app.models.study_session_model import SessionStatus
 
@@ -173,18 +174,54 @@ async def crud_end_study_session(
         GameService.level_up(player, xp_earned.get("total_xp", 0))
         GameService.update_player_streak(player, session_status)
 
-        await session.commit()  # Commit all changes in **one transaction**
+        is_boss_available = False
+        BOSS_AVAILABILITY_THRESHOLD = 3
+
+        # ✅ Check if a boss is already available
+        statement = (
+            select(BossBattleStatus)
+            .where(
+                BossBattleStatus.player_id == player.id,
+                BossBattleStatus.status == BossBattleStatusState.AVAILABLE,
+            )
+            .limit(1)
+        )
+        result = await session.execute(statement)
+        existing_boss_status = result.scalar_one_or_none()
+
+        if existing_boss_status:
+            is_boss_available = True
+        else:
+            player.boss_availability_counter += 1
+
+        # ✅ If no boss exists AND threshold met → create one
+        if (
+            not existing_boss_status
+            and player.boss_availability_counter >= BOSS_AVAILABILITY_THRESHOLD
+        ):
+            new_boss_status = BossBattleStatus(
+                player_id=player.id,
+                status=BossBattleStatusState.AVAILABLE,
+                available_at=datetime.now(timezone.utc),
+            )
+            session.add(new_boss_status)
+
+            is_boss_available = True  # Boss is now available
+            player.boss_availability_counter = 0  # Reset the counter
+
+        await session.commit()
 
         session_end_result = StudySessionEnd(
             **_serialize_study_session(study_session, study_session.tasks).model_dump(),
             longest_session_streak=player.longest_session_streak,
             session_streak=player.session_streak,
+            is_boss_available=is_boss_available,
         )
 
         return session_end_result
 
     except Exception as e:
-        await session.rollback()  # Rollback changes on error
+        await session.rollback()
         print(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
