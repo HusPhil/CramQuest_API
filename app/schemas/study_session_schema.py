@@ -36,3 +36,4 @@ class StudySessionEnd(StudySessionRead):
 
     session_streak: int
     longest_session_streak: int
+    is_boss_available: bool

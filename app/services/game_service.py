@@ -124,6 +124,7 @@ class GameService:
             player.session_streak += 1
         else:
             player.session_streak = 0  # defeat or canceled resets it
+            player.boss_availability_counter = 0
 
         # ✅ Update longest streak if current streak is higher
         if player.session_streak > player.longest_session_streak:
