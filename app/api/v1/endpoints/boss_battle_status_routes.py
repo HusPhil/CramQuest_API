@@ -13,8 +13,6 @@ from app.crud.boss_battle_status_crud import (
 from app.models import User
 
 router = APIRouter(
-    prefix="/boss-battle-statuses",
-    tags=["Boss Battle Statuses"],
     dependencies=[Depends(get_current_user)],
 )
 

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship, Column, ForeignKey, String
+from sqlmodel import SQLModel, Field, Relationship, Column, ForeignKey, String, DateTime
 
 if TYPE_CHECKING:
     from app.models import Player
@@ -25,7 +25,11 @@ class BossBattleStatus(SQLModel, table=True):
         sa_column=Column(String, nullable=False), default=BossBattleStatusState.LOCKED
     )
 
-    available_at: Optional[datetime] = Field(default=None)
-    defeated_at: Optional[datetime] = Field(default=None)
+    available_at: Optional[datetime] = Field(
+        default=None, sa_type=DateTime(timezone=True), nullable=True
+    )
+    defeated_at: Optional[datetime] = Field(
+        default=None, sa_type=DateTime(timezone=True), nullable=True
+    )
 
     player: "Player" = Relationship(back_populates="boss_battle_statuses")
