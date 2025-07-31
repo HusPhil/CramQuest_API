@@ -13,11 +13,19 @@ class RewardType(str, Enum):
     MISC = "misc"
 
 
+class RewardRarity(str, Enum):
+    COMMON = "common"
+    RARE = "rare"
+    EPIC = "epic"
+    LEGENDARY = "legendary"
+
+
 class Reward(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     description: str
-    type: RewardType
+    type: RewardType = Field()
+    rarity: RewardRarity = Field()
     stackable: bool = True
     image_url: Optional[str] = None
     equipped_image_url: Optional[str] = None
