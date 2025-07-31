@@ -1,9 +1,25 @@
 from datetime import datetime
+import random
 from typing import TypedDict
 
 from app.external.external import determine_player_title
+from app.models.reward_model import Reward, RewardRarity
 from app.models.study_session_model import SessionStatus
 from app.models import Player, StudySession, Quest
+
+RARITY_WEIGHTS = {
+    RewardRarity.COMMON: 80,
+    RewardRarity.RARE: 15,
+    RewardRarity.EPIC: 4,
+    RewardRarity.LEGENDARY: 1,
+}
+
+RARITY_XP = {
+    RewardRarity.COMMON: 20,
+    RewardRarity.RARE: 50,
+    RewardRarity.EPIC: 120,
+    RewardRarity.LEGENDARY: 500,
+}
 
 
 class XPCalculationResult(TypedDict):
@@ -113,6 +129,7 @@ class GameService:
 
         return player
 
+    @staticmethod
     def update_player_streak(player: Player, session_status: SessionStatus) -> Player:
         """
         Updates the player's winning streak:
@@ -131,3 +148,7 @@ class GameService:
             player.longest_session_streak = player.session_streak
 
         return player
+
+    def pick_random_item_weighted(all_items: list[Reward]) -> Reward:
+        weights = [RARITY_WEIGHTS[item.rarity] for item in all_items]
+        return random.choices(all_items, weights=weights, k=1)[0]
