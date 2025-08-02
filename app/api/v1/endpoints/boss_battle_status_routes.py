@@ -6,11 +6,11 @@ from app.core.database import get_session
 from app.core.auth import get_current_user
 from app.schemas.boss_battle_status_schema import (
     BossBattleEndRead,
-    BossBattleInfo,
+    BossBattlEndInfo,
     BossBattleStatusRead,
 )
 from app.crud.boss_battle_status_crud import (
-    crud_get_boss_battle_end,
+    crud_end_boss_battle,
     crud_read_player_boss_battle_statuses,
     crud_read_player_boss_battle_status,
     crud_read_player_latest_boss_battle_status,
@@ -51,6 +51,6 @@ async def get_player_latest_boss_battle_status(
 
 @router.post("/player/{player_id}/end", response_model=BossBattleEndRead)
 async def get_boss_battle_end(
-    player_id: int, battle_info: BossBattleInfo, session: Session = Depends(get_session)
+    player_id: int, battle_info: BossBattlEndInfo, session: Session = Depends(get_session)
 ):
-    return await crud_get_boss_battle_end(player_id, battle_info, session)
+    return await crud_end_boss_battle(player_id, battle_info, session)

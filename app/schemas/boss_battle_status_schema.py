@@ -22,7 +22,7 @@ class BossBattleEndRead(BaseModel):
     reward_item: Optional[RewardRead]
 
 
-class BossBattleInfo(BaseModel):
+class BossBattlEndInfo(BaseModel):
     victory: bool
     total_rounds: int
     player_health: int

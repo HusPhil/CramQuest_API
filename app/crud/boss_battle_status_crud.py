@@ -8,7 +8,7 @@ from app.models.player_inventory_item_model import EquippedSlot, PlayerInventory
 from app.models.reward_model import Reward, RewardType
 from app.schemas.boss_battle_status_schema import (
     BossBattleEndRead,
-    BossBattleInfo,
+    BossBattlEndInfo,
     BossBattleStatusRead,
 )
 from app.exceptions.player_exceptions import (
@@ -50,8 +50,8 @@ async def crud_read_player_latest_boss_battle_status(
     return _serialize_boss_battle_status(latest_status)
 
 
-async def crud_get_boss_battle_end(
-    player_id: int, battle_info: BossBattleInfo, session: AsyncSession
+async def crud_end_boss_battle(
+    player_id: int, battle_info: BossBattlEndInfo, session: AsyncSession
 ) -> BossBattleEndRead:
     total_rounds = battle_info.total_rounds
     player_health = battle_info.player_health
