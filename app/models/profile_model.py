@@ -23,6 +23,7 @@ class Profile(SQLModel, table=True):
     )
 
     avatar_url: Optional[str] = Field(default="default/default_1.png")
+    skin_url: Optional[str] = Field()
     bio: Optional[str] = Field(default="")
     mood: Mood = Field(sa_column=Column(String, nullable=False), default=Mood.NEUTRAL)
 
