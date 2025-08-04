@@ -9,16 +9,20 @@ class ProfileCreate(BaseModel):
     bio: str = ""
     mood: Mood = Mood.NEUTRAL
 
+
 class ProfileBase(BaseModel):
-    avatar_url: Optional[str] 
+    avatar_url: Optional[str]
+    skin_url: Optional[str]
     bio: Optional[str]
     mood: Optional[Mood]
+
 
 class ProfileRead(ProfileBase):
     id: int
     player_id: int
 
+
 class ProfileUpdate(BaseModel):
     avatar_url: Optional[str] = None
     bio: Optional[str] = None
-    mood: Optional[Mood] = None 
+    mood: Optional[Mood] = None
