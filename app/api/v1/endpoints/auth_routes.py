@@ -85,6 +85,7 @@ async def sign_out() -> JSONResponse:
 @router.post("/refresh_session")
 async def refresh_session(request: Request, session: Session = Depends(get_session)):
     refresh_token = request.cookies.get(refresh_token_cookie_key)
+    print("Refresh token:", refresh_token)
 
     if not refresh_token:
         raise HTTPException(status_code=401, detail="Missing refresh token")
@@ -186,6 +187,7 @@ def build_user_bundle(user_complete_info: User):
         avatar_url=user_complete_info.player.profile.avatar_url,
         bio=user_complete_info.player.profile.bio,
         mood=user_complete_info.player.profile.mood,
+        skin_url=user_complete_info.player.profile.skin_url,
     )
 
     return user_read, player_read, profile_read
