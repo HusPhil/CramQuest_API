@@ -11,40 +11,43 @@ from app.exceptions.player_exceptions import PlayerNotFound
 from app.exceptions.profile_exceptions import ProfileNotFound, ProfileAlreadyExist
 
 
-async def crud_create_profile(session: AsyncSession, player_id: int, profile_create: ProfileCreate) -> ProfileRead:
-    
+async def crud_create_profile(
+    session: AsyncSession, player_id: int, profile_create: ProfileCreate
+) -> ProfileRead:
+
     player, profile = await _get_player_and_profile_or_error(session, player_id)
 
     new_profile = Profile(
-        player_id=player_id, 
-        avatar_url=profile_create.avatar_url, 
-        bio=profile_create.bio, 
-        mood=profile_create.mood
+        player_id=player_id,
+        avatar_url=profile_create.avatar_url,
+        bio=profile_create.bio,
+        mood=profile_create.mood,
     )
 
     try:
-        session.add(new_profile)    
+        session.add(new_profile)
         await session.commit()
         await session.refresh(new_profile)
 
         return _serialize_profile(new_profile)
-    
+
     except SQLAlchemyError as e:
         await session.rollback()
-        raise RuntimeError(f"Unexpected SQLAlchemyError while creating Profile: {str(e)}")
+        raise RuntimeError(
+            f"Unexpected SQLAlchemyError while creating Profile: {str(e)}"
+        )
     except Exception as e:
         await session.rollback()
         raise RuntimeError(f"Unexpected error while creating Profile: {str(e)}")
+
 
 async def crud_read_profile(session: AsyncSession, profile_id: int) -> ProfileRead:
     profile = await _get_profile_or_error(session, profile_id)
     return _serialize_profile(profile)
 
+
 async def crud_read_all_profiles(session: AsyncSession) -> list[ProfileRead]:
-    statement = (
-        select(Profile)
-        .options(joinedload(Profile.player))
-    )
+    statement = select(Profile).options(joinedload(Profile.player))
 
     result = await session.execute(statement)
     profiles = result.scalars().all()
@@ -56,7 +59,10 @@ async def crud_read_all_profiles(session: AsyncSession) -> list[ProfileRead]:
 
     return profiles_with_users
 
-async def crud_update_profile(session: AsyncSession, profile_id: int, profile_update: ProfileUpdate) -> ProfileRead:
+
+async def crud_update_profile(
+    session: AsyncSession, profile_id: int, profile_update: ProfileUpdate
+) -> ProfileRead:
     """Update a Profile while allowing partial updates."""
 
     profile = await _get_profile_or_error(session, profile_id)
@@ -78,12 +84,12 @@ async def crud_update_profile(session: AsyncSession, profile_id: int, profile_up
     try:
         for key, value in updated_data.items():
             setattr(profile, key, value)
-        
+
         await session.commit()
         await session.refresh(profile)
 
         return _serialize_profile(profile)
-    
+
     except SQLAlchemyError as e:
         await session.rollback()
         raise HTTPException(status_code=400, detail=f"Error updating profile: {e}")
@@ -91,10 +97,11 @@ async def crud_update_profile(session: AsyncSession, profile_id: int, profile_up
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=400, detail=f"Error updating profile: {e}")
-    
 
 
-async def _get_player_and_profile_or_error(session: AsyncSession, player_id: int) -> tuple[Player, Profile]:
+async def _get_player_and_profile_or_error(
+    session: AsyncSession, player_id: int
+) -> tuple[Player, Profile]:
     statement = (
         select(Player)
         .where(Player.id == player_id)
@@ -106,11 +113,12 @@ async def _get_player_and_profile_or_error(session: AsyncSession, player_id: int
 
     if not player:
         raise PlayerNotFound(player_id)
-    
+
     if player.profile:
         raise ProfileAlreadyExist(player_id)
-    
+
     return (player, player.profile)
+
 
 async def _get_profile_or_error(session: AsyncSession, profile_id: int) -> Profile:
     statement = (
@@ -127,22 +135,13 @@ async def _get_profile_or_error(session: AsyncSession, profile_id: int) -> Profi
 
     return profile
 
+
 def _serialize_profile(profile: Profile) -> ProfileRead:
     return ProfileRead(
         id=profile.id,
         player_id=profile.player.id,
         avatar_url=profile.avatar_url,
         bio=profile.bio,
-        mood=profile.mood
+        mood=profile.mood,
+        skin_url=profile.skin_url,
     )
-
-
-
-
-
-
-
-
-
-
-
