@@ -14,7 +14,7 @@ from app.schemas.boss_battle_status_schema import (
 from app.exceptions.player_exceptions import (
     PlayerNotFound,
 )
-from app.schemas.reward_schema import RewardRead
+from app.schemas.reward_schema import RewardItemRead
 from app.services.game_service import RARITY_XP, GameService
 
 
@@ -77,7 +77,7 @@ async def crud_end_boss_battle(
                 Reward.type == RewardType.SKIN,
             )
         )
-        has_any_skin = existing_skin.scalar_one_or_none()
+        has_any_skin = existing_skin.first()
 
         if not has_any_skin:
             ### ✅ 2) First ever → force default_1 → skip random roll
@@ -143,7 +143,7 @@ async def crud_end_boss_battle(
         base_xp=base_xp,
         bonus_xp=bonus_xp,
         reward_item=(
-            RewardRead(
+            RewardItemRead(
                 description=reward_item.description,
                 equipped_image_url=reward_item.equipped_image_url,
                 image_url=reward_item.image_url,
