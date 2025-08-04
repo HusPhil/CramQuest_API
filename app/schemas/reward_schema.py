@@ -4,7 +4,7 @@ from typing import Optional
 from app.models.reward_model import RewardRarity
 
 
-class RewardRead(BaseModel):
+class RewardItemRead(BaseModel):
     id: int
     name: str
     description: str
