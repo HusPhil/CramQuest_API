@@ -17,7 +17,7 @@ from app.models.weekly_checkin_model import WeeklyCheckIn
 # ✅ Create async database engine
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=True,
+    # echo=True,
     future=True,
     pool_size=10,
     max_overflow=5,
