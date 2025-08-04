@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
 
-from app.schemas.reward_schema import RewardRead
+from app.schemas.reward_schema import RewardItemRead
 
 
 class BossBattleStatusBase(BaseModel):
@@ -19,7 +19,7 @@ class BossBattleStatusRead(BossBattleStatusBase):
 class BossBattleEndRead(BaseModel):
     base_xp: int
     bonus_xp: int
-    reward_item: Optional[RewardRead]
+    reward_item: Optional[RewardItemRead]
 
 
 class BossBattlEndInfo(BaseModel):
