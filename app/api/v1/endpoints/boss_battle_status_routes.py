@@ -51,6 +51,9 @@ async def get_player_latest_boss_battle_status(
 
 @router.post("/player/{player_id}/end", response_model=BossBattleEndRead)
 async def get_boss_battle_end(
-    player_id: int, battle_info: BossBattlEndInfo, session: Session = Depends(get_session)
+    player_id: int,
+    battle_info: BossBattlEndInfo,
+    session: Session = Depends(get_session),
 ):
+    print("Processing end of boss battle for player:", player_id, battle_info)
     return await crud_end_boss_battle(player_id, battle_info, session)
