@@ -74,8 +74,8 @@ app.include_router(
 )
 app.include_router(
     player_inventory_item_routes.router,
-    prefix="/player_inventory_item_routes",
-    tags=["player_inventory_item_routes"],
+    prefix="/player_inventory_items",
+    tags=["player_inventory_items"],
 )
 
 
