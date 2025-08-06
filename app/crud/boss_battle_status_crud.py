@@ -1,9 +1,10 @@
+import datetime
 import random
 from sqlmodel import select, desc
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.boss_battle_status_model import BossBattleStatus
+from app.models.boss_battle_status_model import BossBattleStatus, BossBattleStatusState
 from app.models.player_inventory_item_model import EquippedSlot, PlayerInventoryItem
 from app.models.reward_model import Reward, RewardType
 from app.schemas.boss_battle_status_schema import (
@@ -53,6 +54,19 @@ async def crud_read_player_latest_boss_battle_status(
 async def crud_end_boss_battle(
     player_id: int, battle_info: BossBattlEndInfo, session: AsyncSession
 ) -> BossBattleEndRead:
+    print(f"\n\n\n\n\n{battle_info}\n\n\n\n\n")
+
+    result = await session.execute(
+        select(BossBattleStatus).where(BossBattleStatus.id == battle_info.id)
+    )
+    boss_status = result.scalar_one_or_none()
+
+    if not boss_status:
+        return False  # Or raise an exception if you prefer
+
+    boss_status.status = BossBattleStatusState.DEFEATED
+    boss_status.defeated_at = datetime.datetime.now(datetime.timezone.utc)
+
     total_rounds = battle_info.total_rounds
     player_health = battle_info.player_health
     enemy_health = battle_info.enemy_health
@@ -66,7 +80,7 @@ async def crud_end_boss_battle(
     base_xp = 50
     bonus_xp = 0
     reward_item = None
-
+    all_items = (await session.execute(select(Reward))).scalars().all()
     if victory:
         ### ✅ 1) Check if player has *any* skin already
         existing_skin = await session.execute(
@@ -103,7 +117,7 @@ async def crud_end_boss_battle(
             ### ✅ 3) Already has skin → normal drop logic applies
             roll = random.random()
             if roll < final_drop_chance:
-                all_items = (await session.execute(select(Reward))).scalars().all()
+
                 if all_items:
                     chosen_item: Reward = GameService.pick_random_item_weighted(
                         all_items
@@ -157,6 +171,24 @@ async def crud_end_boss_battle(
             else None
         ),
     )
+    # return BossBattleEndRead(
+    #     base_xp=base_xp,
+    #     bonus_xp=bonus_xp,
+    #     reward_item=(
+    #         RewardItemRead(
+    #             description=all_items[3].description,
+    #             equipped_image_url=all_items[3].equipped_image_url,
+    #             image_url=all_items[3].image_url,
+    #             id=all_items[3].id,
+    #             name=all_items[3].name,
+    #             rarity=all_items[3].rarity,
+    #             stackable=all_items[3].stackable,
+    #             type=all_items[3].type,
+    #         )
+    #         if all_items[3]
+    #         else None
+    #     ),
+    # )
 
 
 async def _get_boss_battle_status_or_error(
