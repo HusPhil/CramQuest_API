@@ -23,6 +23,7 @@ class BossBattleEndRead(BaseModel):
 
 
 class BossBattlEndInfo(BaseModel):
+    id: int
     victory: bool
     total_rounds: int
     player_health: int
