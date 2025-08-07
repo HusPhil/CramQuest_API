@@ -7,12 +7,14 @@ from app.schemas.study_session_schema import (
     StudySessionEnd,
     StudySessionRead,
     StudySessionCreate,
+    StudySessionResume,
 )
 from app.crud.study_session_crud import (
     crud_create_study_session,
     crud_read_study_session,
     crud_end_study_session,
     crud_read_all_study_sessions,
+    crud_resume_study_session,
 )
 
 router = APIRouter()
@@ -45,3 +47,11 @@ async def end_study_session(
     current_user: User = Depends(get_current_user),
 ):
     return await crud_end_study_session(session, study_session_id, current_user)
+
+
+@router.get("/active_session/resume", response_model=StudySessionResume)
+async def resume_study_session(
+    session: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    return await crud_resume_study_session(session, current_user.player.id)

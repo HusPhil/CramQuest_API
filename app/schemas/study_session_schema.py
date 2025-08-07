@@ -37,3 +37,8 @@ class StudySessionEnd(StudySessionRead):
     session_streak: int
     longest_session_streak: int
     is_boss_available: bool
+
+
+class StudySessionResume(BaseModel):
+    session_data: Optional[StudySessionRead] = None
+    is_resumable: bool

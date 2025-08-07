@@ -14,6 +14,7 @@ from app.schemas.study_session_schema import (
     StudySessionEnd,
     StudySessionRead,
     StudySessionCreate,
+    StudySessionResume,
 )
 from app.schemas.task_schema import TaskRead
 from app.services.game_service import GameService
@@ -121,6 +122,45 @@ async def crud_read_all_study_sessions(session: AsyncSession) -> list[StudySessi
     )
     study_sessions = result.all()
     return [_serialize_study_session(study_session) for study_session in study_sessions]
+
+
+async def crud_resume_study_session(
+    session: AsyncSession, player_id: int
+) -> StudySessionResume:
+    study_session = await session.scalar(
+        select(StudySession)
+        .options(selectinload(StudySession.tasks), selectinload(StudySession.quest))
+        .where(StudySession.player_id == player_id)
+        .where(StudySession.status == SessionStatus.ACTIVE)
+    )
+
+    if study_session is None:
+        return StudySessionResume(is_resumable=False)
+
+    session_data = StudySessionRead(
+        id=study_session.id,
+        quest_id=study_session.quest_id,
+        player_id=study_session.player_id,
+        subject_id=study_session.subject_id,
+        start_time=study_session.start_time,
+        actual_complete_time=study_session.actual_complete_time,
+        end_time=study_session.end_time,
+        bonus_xp=study_session.bonus_xp,
+        base_xp=study_session.base_xp,
+        status=study_session.status,
+        tasks=[
+            TaskRead(
+                id=task.id,
+                start_time=task.start_time,
+                end_time=task.end_time,
+                description=task.description,
+                study_session_id=study_session.id,
+            )
+            for task in study_session.tasks
+        ],
+    )
+
+    return StudySessionResume(session_data=session_data, is_resumable=True)
 
 
 async def crud_end_study_session(
