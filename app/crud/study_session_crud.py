@@ -10,6 +10,7 @@ from app.models.study_session_model import SessionStatus
 
 from app.crud.subject_crud import SubjectNotFound, SubjectNotBelongsToPlayer
 from app.models.user_model import User
+from app.schemas.quest_schema import QuestRead
 from app.schemas.study_session_schema import (
     StudySessionEnd,
     StudySessionRead,
@@ -69,7 +70,9 @@ async def crud_create_study_session(
 
     await _validate_new_study_session(session, new_study_session)
 
-    start_time = datetime.now().replace(tzinfo=timezone.utc)
+    print(new_study_session)
+
+    start_time = datetime.now(timezone.utc)
     end_time = start_time + timedelta(minutes=new_study_session.duration_mins)
 
     study_session = StudySession(
@@ -160,7 +163,18 @@ async def crud_resume_study_session(
         ],
     )
 
-    return StudySessionResume(session_data=session_data, is_resumable=True)
+    quest_data = QuestRead(
+        created_at=study_session.quest.created_at,
+        description=study_session.quest.description,
+        difficulty=study_session.quest.difficulty,
+        id=study_session.quest.id,
+        status=study_session.quest.status,
+        subject_id=study_session.quest.subject_id,
+    )
+
+    return StudySessionResume(
+        session_data=session_data, quest_data=quest_data, is_resumable=True
+    )
 
 
 async def crud_end_study_session(
@@ -184,7 +198,7 @@ async def crud_end_study_session(
     try:
         # ✅ Determine Outcome (Win, Defeat, or Canceled)
         total_assigned_tasks = len(study_session.tasks)
-        actual_complete_time = datetime.now().replace(tzinfo=timezone.utc)
+        actual_complete_time = datetime.now(timezone.utc)
 
         if actual_complete_time <= study_session.end_time:
             session_status = SessionStatus.COMPLETED  # 🏆 Win (All tasks done)
@@ -231,6 +245,8 @@ async def crud_end_study_session(
 
         if existing_boss_status:
             is_boss_available = True
+        elif session_status == SessionStatus.DEFEAT:
+            player.boss_availability_counter = 0
         else:
             player.boss_availability_counter += 1
 

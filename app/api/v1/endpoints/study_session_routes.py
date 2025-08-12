@@ -17,8 +17,8 @@ from app.crud.study_session_crud import (
     crud_resume_study_session,
 )
 
-router = APIRouter()
-# router = APIRouter(dependencies=[Depends(get_session), Depends(get_current_user)])
+# router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_session), Depends(get_current_user)])
 
 
 @router.post("/", response_model=StudySessionRead)
