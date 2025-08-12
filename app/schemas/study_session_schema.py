@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 from app.models.study_session_model import SessionStatus
+from app.schemas.quest_schema import QuestRead
 from app.schemas.task_schema import TaskRead, TaskTimingBatchPayload
 
 
@@ -41,4 +42,5 @@ class StudySessionEnd(StudySessionRead):
 
 class StudySessionResume(BaseModel):
     session_data: Optional[StudySessionRead] = None
+    quest_data: Optional[QuestRead] = None
     is_resumable: bool
