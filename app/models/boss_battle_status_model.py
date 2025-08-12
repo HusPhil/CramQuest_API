@@ -10,6 +10,9 @@ class BossBattleStatusState(str):
     AVAILABLE = "available"
     DEFEATED = "defeated"
     LOCKED = "locked"
+    STARTED = "started"
+    ENDED = "ended"
+    VICTORIOUS = "victorious"
 
 
 class BossBattleStatus(SQLModel, table=True):
