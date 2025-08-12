@@ -23,11 +23,11 @@ app = FastAPI(
 )
 
 prod_origins = [
-    "https://YOUR-FRONTEND-ORIGIN.example.com/cramquest",
+    "https://YOUR-FRONTEND-ORIGIN.example.com",
 ]
 
 dev_origins = [
-    "https://YOUR-FRONTEND-ORIGIN.example.com/cramquest",  # ✅ Allow local frontend during development
+    "https://YOUR-FRONTEND-ORIGIN.example.com",  # ✅ Allow local frontend during development
     "http://localhost:3000",  # ✅ Allow local frontend during development
     "http://localhost:5173",  # ✅ Allow local frontend during development
     "http://localhost:5173",  # ✅ Allow local frontend during development
