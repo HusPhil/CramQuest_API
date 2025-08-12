@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from email.policy import HTTP
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +11,7 @@ from app.schemas.task_schema import TaskRead, TaskTimingBatchPayload
 async def crud_start_task(session: AsyncSession, task_id: int) -> TaskRead:
     try:
         task_to_update = await _get_task_or_404(session, task_id)
-        task_to_update.start_time = datetime.now()
+        task_to_update.start_time = datetime.now(timezone.utc)
         await session.commit()
         return _serialize_task(task_to_update)
     except Exception as e:
@@ -21,7 +21,7 @@ async def crud_start_task(session: AsyncSession, task_id: int) -> TaskRead:
 async def crud_end_task(session: AsyncSession, task_id: int) -> TaskRead:
     try:
         task_to_update = await _get_task_or_404(session, task_id)
-        task_to_update.end_time = datetime.now()
+        task_to_update.end_time = datetime.now(timezone.utc)
         await session.commit()
         return _serialize_task(task_to_update)
     except Exception as e:

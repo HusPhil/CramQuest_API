@@ -8,8 +8,8 @@ from app.crud.task_crud import crud_end_task, crud_start_task, crud_sync_task_ti
 from app.schemas.task_schema import TaskRead, TaskTimingBatchPayload
 
 
-# router = APIRouter(dependencies=[Depends(get_session), Depends(get_current_user)])
-router = APIRouter(dependencies=[Depends(get_session)])
+router = APIRouter(dependencies=[Depends(get_session), Depends(get_current_user)])
+# router = APIRouter(dependencies=[Depends(get_session)])
 
 
 @router.post("/{task_id}/start", response_model=TaskRead)
