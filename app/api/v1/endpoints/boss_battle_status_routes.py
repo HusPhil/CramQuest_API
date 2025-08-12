@@ -14,6 +14,7 @@ from app.crud.boss_battle_status_crud import (
     crud_read_player_boss_battle_statuses,
     crud_read_player_boss_battle_status,
     crud_read_player_latest_boss_battle_status,
+    crud_start_boss_battle,
 )
 from app.models import User
 
@@ -50,10 +51,18 @@ async def get_player_latest_boss_battle_status(
 
 
 @router.post("/player/{player_id}/end", response_model=BossBattleEndRead)
-async def get_boss_battle_end(
+async def boss_battle_end(
     player_id: int,
     battle_info: BossBattlEndInfo,
     session: Session = Depends(get_session),
 ):
     print("Processing end of boss battle for player:", player_id, battle_info)
     return await crud_end_boss_battle(player_id, battle_info, session)
+
+
+@router.post("/player/{battle_id}/start", response_model=BossBattleStatusRead)
+async def boss_battle_start(
+    battle_id: int,
+    session: Session = Depends(get_session),
+):
+    return await crud_start_boss_battle(battle_id, session)

@@ -36,19 +36,39 @@ async def crud_read_player_boss_battle_status(
 async def crud_read_player_latest_boss_battle_status(
     player_id: int, session: AsyncSession
 ) -> BossBattleStatusRead:
-    statement = (
-        select(BossBattleStatus)
-        .where(BossBattleStatus.player_id == player_id)
-        .order_by(desc(BossBattleStatus.available_at))
-        .limit(1)
+    statement = select(BossBattleStatus).where(
+        BossBattleStatus.player_id == player_id,
+        BossBattleStatus.status == BossBattleStatusState.AVAILABLE,
     )
     result = await session.execute(statement)
     latest_status = result.scalar_one_or_none()
 
     if not latest_status:
-        raise PlayerNotFound(player_id)
+        return BossBattleStatusRead(
+            id=-1,
+            player_id=player_id,
+            status=BossBattleStatusState.LOCKED,
+        )
 
     return _serialize_boss_battle_status(latest_status)
+
+
+async def crud_start_boss_battle(
+    boss_battle_id: int, session: AsyncSession
+) -> BossBattleStatusRead:
+    result = await session.execute(
+        select(BossBattleStatus).where(BossBattleStatus.id == boss_battle_id)
+    )
+    boss_status = result.scalar_one_or_none()
+
+    if not boss_status:
+        return False  # Or raise an exception if you prefer
+
+    boss_status.status = BossBattleStatusState.STARTED
+    boss_status.available_at = datetime.datetime.now(datetime.timezone.utc)
+
+    await session.commit()
+    return _serialize_boss_battle_status(boss_status)
 
 
 async def crud_end_boss_battle(
@@ -64,7 +84,11 @@ async def crud_end_boss_battle(
     if not boss_status:
         return False  # Or raise an exception if you prefer
 
-    boss_status.status = BossBattleStatusState.DEFEATED
+    boss_status.status = (
+        BossBattleStatusState.DEFEATED
+        if battle_info.victory
+        else BossBattleStatusState.VICTORIOUS
+    )
     boss_status.defeated_at = datetime.datetime.now(datetime.timezone.utc)
 
     total_rounds = battle_info.total_rounds
