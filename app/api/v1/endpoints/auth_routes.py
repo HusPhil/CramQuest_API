@@ -73,8 +73,10 @@ async def sign_out() -> JSONResponse:
 
     response.delete_cookie(
         key=refresh_token_cookie_key,
+        secure=True,
         path="/",
-        samesite="lax",
+        samesite="none",
+        httponly=True,
     )
 
     return response
@@ -141,7 +143,9 @@ def _get_authentication_response(user: UserRead, player: PlayerRead) -> JSONResp
     response.set_cookie(
         key=refresh_token_cookie_key,
         value=refresh_token,
-        samesite="lax",  # or "strict" or "none"
+        httponly=True,
+        secure=True,  # True in production with HTTPS
+        samesite="none",  # or "strict" or "none"
         path="/",  # Send this cookie to all routes
     )
 
