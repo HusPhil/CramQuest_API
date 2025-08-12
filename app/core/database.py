@@ -1,4 +1,3 @@
-from sqlalchemy import NullPool
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
@@ -18,8 +17,12 @@ from app.models.weekly_checkin_model import WeeklyCheckIn
 # ✅ Create async database engine
 engine = create_async_engine(
     settings.DATABASE_URL,
+    # echo=True,
     future=True,
-    poolclass=NullPool,  # ✅ No persistent pool
+    pool_size=5,
+    max_overflow=3,
+    pool_timeout=60,
+    pool_recycle=900,
 )
 
 AsyncSessionLocal = sessionmaker(
