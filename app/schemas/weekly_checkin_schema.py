@@ -18,3 +18,7 @@ class WeeklyCheckInRead(BaseModel):
     friday: CheckInStatus
     saturday: CheckInStatus
     sunday: CheckInStatus
+
+
+class PerfectWeeklyCheckInRewardRead(BaseModel):
+    reward_xp: int

@@ -5,7 +5,11 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Player, WeeklyCheckIn
-from app.schemas.weekly_checkin_schema import CheckInStatus, WeeklyCheckInRead
+from app.schemas.weekly_checkin_schema import (
+    CheckInStatus,
+    PerfectWeeklyCheckInRewardRead,
+    WeeklyCheckInRead,
+)
 
 day_names = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 
@@ -91,6 +95,21 @@ async def crud_get_latest_check_in(
         saturday=day_statuses["sat"],
         sunday=day_statuses["sun"],
     )
+
+
+async def crud_perfect_reward_weekly_checkin(
+    player_id: int, session: AsyncSession
+) -> PerfectWeeklyCheckInRewardRead:
+
+    reward_xp = 100
+
+    player = await session.get(Player, player_id)
+    if player.daily_streak >= 7:
+        player.experience += reward_xp
+
+    await session.commit()
+
+    return PerfectWeeklyCheckInRewardRead(reward_xp=reward_xp)
 
 
 def _get_day_statuses(weekly: WeeklyCheckIn):
