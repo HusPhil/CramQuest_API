@@ -19,7 +19,10 @@ from app.models.weekly_checkin_model import WeeklyCheckIn
 engine = create_async_engine(
     settings.DATABASE_URL,
     future=True,
-    poolclass=NullPool,  # ✅ No persistent pool
+    pool_size=5,
+    max_overflow=3,
+    pool_timeout=60,
+    pool_recycle=900,
 )
 
 AsyncSessionLocal = sessionmaker(

@@ -144,7 +144,6 @@ def _get_authentication_response(user: UserRead, player: PlayerRead) -> JSONResp
         key=refresh_token_cookie_key,
         value=refresh_token,
         httponly=True,
-        domain="YOUR-FRONTEND-ORIGIN.example.com",
         secure=True,  # True in production with HTTPS
         samesite="none",  # or "strict" or "none"
         path="/",  # Send this cookie to all routes
