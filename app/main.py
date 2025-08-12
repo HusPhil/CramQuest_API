@@ -23,7 +23,7 @@ app = FastAPI(
 )
 
 prod_origins = [
-    "*",
+    "https://YOUR-FRONTEND-ORIGIN.example.com/cramquest",
 ]
 
 dev_origins = [
@@ -44,7 +44,7 @@ dev_origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=prod_origins,
+    allow_origins=dev_origins,
     allow_credentials=True,
     allow_methods=["*"],  # ✅ Allow all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # ✅ Allow all headers
