@@ -7,7 +7,6 @@ from app.api.v1.endpoints import (
     user_routes,
     player_routes,
     auth_routes,
-    test_routes,
     profile_routes,
     subject_routes,
     study_session_routes,
@@ -17,26 +16,38 @@ from app.api.v1.endpoints import (
 from fastapi.middleware.cors import CORSMiddleware
 
 
-app = FastAPI(title="CramQuest API", version="1.0.0")
+# app = FastAPI(title="CramQuest API", version="1.0.0")
+app = FastAPI(
+    title="CramQuest API",
+    version="1.0.0",
+    docs_url=None,  # Disable Swagger UI at /docs
+    redoc_url=None,  # Disable ReDoc at /redoc
+    openapi_url=None,  # Optional: Disable OpenAPI schema at /openapi.json
+)
+
+prod_origins = [
+    "https://YOUR-FRONTEND-ORIGIN.example.com/cramquest",
+]
+
+dev_origins = [
+    "https://YOUR-FRONTEND-ORIGIN.example.com/cramquest",  # ✅ Allow local frontend during development
+    "http://localhost:3000",  # ✅ Allow local frontend during development
+    "http://localhost:5173",  # ✅ Allow local frontend during development
+    "http://localhost:5173",  # ✅ Allow local frontend during development
+    "http://localhost:5173",  # ✅ Allow local frontend during development
+    "http://localhost:5173",  # ✅ Allow local frontend during development
+    "http://localhost:5173",  # ✅ Allow local frontend during development
+    "http://localhost:5173",  # ✅ Allow local frontend during development
+    "http://localhost:5173",  # ✅ Allow local frontend during development
+    "http://localhost:5173",  # ✅ Allow local frontend during development
+    "http://localhost:5173",  # ✅ Allow local frontend during development
+    "http://localhost:5173",  # ✅ Allow local frontend during development
+    "http://localhost:5173",
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # ✅ Allow local frontend during development
-        "http://localhost:3000",  # ✅ Allow local frontend during development
-        "http://localhost:5173",  # ✅ Allow local frontend during development
-        "http://localhost:5173",  # ✅ Allow local frontend during development
-        "http://localhost:5173",  # ✅ Allow local frontend during development
-        "http://localhost:5173",  # ✅ Allow local frontend during development
-        "http://localhost:5173",  # ✅ Allow local frontend during development
-        "http://localhost:5173",  # ✅ Allow local frontend during development
-        "http://localhost:5173",  # ✅ Allow local frontend during development
-        "http://localhost:5173",  # ✅ Allow local frontend during development
-        "http://localhost:5173",  # ✅ Allow local frontend during development
-        "http://localhost:5173",  # ✅ Allow local frontend during development
-        "http://localhost:5173",
-    ],
-    # allow_origins=["http://localhost:5173"],
+    allow_origins=prod_origins,
     allow_credentials=True,
     allow_methods=["*"],  # ✅ Allow all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # ✅ Allow all headers
@@ -79,4 +90,4 @@ app.include_router(
 )
 
 
-app.include_router(test_routes.router, prefix="/tests", tags=["tests"])
+# app.include_router(test_routes.router, prefix="/tests", tags=["tests"])
