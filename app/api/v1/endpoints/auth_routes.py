@@ -1,7 +1,9 @@
+import datetime
 from os import access
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
+from pytz import utc
 from sqlmodel import Session
 
 from app.core.database import get_session
@@ -145,8 +147,11 @@ def _get_authentication_response(user: UserRead, player: PlayerRead) -> JSONResp
         value=refresh_token,
         httponly=True,
         secure=True,  # True in production with HTTPS
-        samesite="none",  # or "strict" or "none"
+        samesite="None",  # or "strict" or "none"
         path="/",  # Send this cookie to all routes
+        expires=datetime.datetime.now(datetime.timezone.utc)
+        + datetime.timedelta(days=30),
+        max_age=30 * 24 * 60 * 60,
     )
 
     return response
