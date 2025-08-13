@@ -20,9 +20,13 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(
     title="CramQuest API",
     version="1.0.0",
+    docs_url=None,  # Disable Swagger UI
+    redoc_url=None,  # Disable ReDoc
+    openapi_url=None,  # Disable OpenAPI schema
 )
 
 prod_origins = [
+    "https://YOUR-FRONTEND-ORIGIN.example.com",
     "https://YOUR-FRONTEND-ORIGIN.example.com",
 ]
 
@@ -44,7 +48,7 @@ dev_origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=dev_origins,
+    allow_origins=prod_origins,
     allow_credentials=True,
     allow_methods=["*"],  # ✅ Allow all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # ✅ Allow all headers
