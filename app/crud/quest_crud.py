@@ -1,4 +1,4 @@
-from sqlmodel import select, and_, exists
+from sqlmodel import or_, select, and_, exists
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Quest, Subject
@@ -158,6 +158,10 @@ async def _validate_new_quest(session: AsyncSession, new_quest: QuestCreate) -> 
                 and_(
                     Quest.subject_id == new_quest.subject_id,
                     Quest.description == new_quest.description,
+                    or_(
+                        Quest.status == QuestStatus.DOING,
+                        Quest.status == QuestStatus.TO_DO,
+                    ),
                 )
             )
             .label("quest_exists"),
