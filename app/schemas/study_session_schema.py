@@ -1,3 +1,4 @@
+from anyio import current_time
 from pydantic import BaseModel, Field
 from typing import Optional, TYPE_CHECKING
 from datetime import datetime
@@ -41,6 +42,7 @@ class StudySessionEnd(StudySessionRead):
 
 
 class StudySessionResume(BaseModel):
+    current_time: datetime
     session_data: Optional[StudySessionRead] = None
     quest_data: Optional[QuestRead] = None
     is_resumable: bool
