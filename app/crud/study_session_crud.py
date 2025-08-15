@@ -173,7 +173,10 @@ async def crud_resume_study_session(
     )
 
     return StudySessionResume(
-        session_data=session_data, quest_data=quest_data, is_resumable=True
+        current_time=datetime.now(timezone.utc),
+        session_data=session_data,
+        quest_data=quest_data,
+        is_resumable=True,
     )
 
 
