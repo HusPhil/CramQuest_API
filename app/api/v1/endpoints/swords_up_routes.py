@@ -14,7 +14,7 @@ router = APIRouter()
 async def swords_up(
     request: Request,
     api_key: Optional[str] = Query(default=None),
-    x_api_key: Optional[str] = Header(default=None, alias="X-API-Key"),
+    x_api_key: Optional[str] = Header(default=None, alias="x-heartbeat-key"),
 ) -> JSONResponse:
     if not settings.SWORDS_UP_API_KEY:
         return JSONResponse(
