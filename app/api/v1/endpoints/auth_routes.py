@@ -1,28 +1,25 @@
 import datetime
-from os import access
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
-from pytz import utc
-from sqlmodel import Session
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.auth import create_access_token, create_refresh_token
 from app.core.database import get_session
 from app.core.security import Security
-from app.core.auth import create_access_token, create_refresh_token
-
-from app.models.user_model import User
-from app.schemas.player_schema import PlayerRead
-
-from app.schemas.profile_schema import ProfileRead
 
 from app.crud.auth_crud import crud_sign_up_user
+from app.crud.user_crud import (
+    UserNotFound,
+    crud_read_user_by_username,
+    crud_read_user_complete_info,
+)
+from app.models.user_model import User
 from app.schemas.auth_schema import RefreshTokenResponse, SignUpRequest
-
-from app.crud.user_crud import crud_read_user_by_username, crud_read_user_complete_info
+from app.schemas.player_schema import PlayerRead
+from app.schemas.profile_schema import ProfileRead
 from app.schemas.user_schema import UserRead
 
-
-from jose import JWTError, ExpiredSignatureError
 
 refresh_token_cookie_key = "_Host-cramquest_ssfpwrtk"
 
@@ -37,17 +34,12 @@ class InvalidCredential(HTTPException):
 @router.post("/sign_in")
 async def sign_in(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
 ) -> JSONResponse:
 
     try:
         user = await crud_read_user_by_username(session, username=form_data.username)
-        print(user)
-
-    except:
-        raise InvalidCredential
-
-    if not user:
+    except UserNotFound:
         raise InvalidCredential
 
     if not Security.verify_hash(form_data.password, user.password):
@@ -62,7 +54,7 @@ async def sign_in(
 async def sign_up(
     request: Request,
     sign_up_request: SignUpRequest,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
 ) -> JSONResponse:
     new_user, new_player = await crud_sign_up_user(session, sign_up_request)
     response = _get_authentication_response(new_user, new_player)
@@ -85,28 +77,18 @@ async def sign_out() -> JSONResponse:
 
 
 @router.post("/refresh_session")
-async def refresh_session(request: Request, session: Session = Depends(get_session)):
+async def refresh_session(request: Request, session: AsyncSession = Depends(get_session)):
     refresh_token = request.cookies.get(refresh_token_cookie_key)
-    print("Refresh token:", refresh_token)
 
     if not refresh_token:
         raise HTTPException(status_code=401, detail="Missing refresh token")
 
-    try:
-        token_verification_res = Security.verify_refresh_token(refresh_token)
+    token_verification_res = Security.verify_refresh_token(refresh_token)
 
-        user_id = token_verification_res.user_id
-        player_id = token_verification_res.player_id
+    user_id = token_verification_res.user_id
+    player_id = token_verification_res.player_id
 
-        user_complete_info = await crud_read_user_complete_info(session, int(user_id))
-        print(user_complete_info)
-
-    except ExpiredSignatureError:
-        print("ExpiredSignatureError")
-        raise HTTPException(status_code=403, detail="Refresh token expired")
-    except JWTError:
-        print("JWTError")
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
+    user_complete_info = await crud_read_user_complete_info(session, int(user_id))
 
     new_access_token = create_access_token({"user_id": user_id, "player_id": player_id})
 
@@ -128,14 +110,14 @@ def _get_authentication_response(user: UserRead, player: PlayerRead) -> JSONResp
         {"user_id": str(user.id), "player_id": str(player.id)}
     )
 
-    access_token = (
-        create_access_token({"user_id": str(user.id), "player_id": str(player.id)}),
+    access_token = create_access_token(
+        {"user_id": str(user.id), "player_id": str(player.id)}
     )
 
     response = JSONResponse(
         content={
             "access_token": access_token,
-            "message": "Sucessfully signed in",
+            "message": "Successfully signed in",
             "id": user.id,
             "username": user.username,
             "email": user.email,

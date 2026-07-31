@@ -16,7 +16,6 @@ from app.api.v1.endpoints import (
 from fastapi.middleware.cors import CORSMiddleware
 
 
-# app = FastAPI(title="CramQuest API", version="1.0.0")
 app = FastAPI(
     title="CramQuest API",
     version="1.0.0",
@@ -25,33 +24,18 @@ app = FastAPI(
     openapi_url=None,  # Disable OpenAPI schema
 )
 
+# CORS is restricted to the deployed frontend origins.
+# Replace with your own deployed frontend URL(s) — this is a placeholder.
 prod_origins = [
     "https://YOUR-FRONTEND-ORIGIN.example.com",
-    "https://YOUR-FRONTEND-ORIGIN.example.com",
-]
-
-dev_origins = [
-    "https://YOUR-FRONTEND-ORIGIN.example.com",  # ✅ Allow local frontend during development
-    "http://localhost:3000",  # ✅ Allow local frontend during development
-    "http://localhost:5173",  # ✅ Allow local frontend during development
-    "http://localhost:5173",  # ✅ Allow local frontend during development
-    "http://localhost:5173",  # ✅ Allow local frontend during development
-    "http://localhost:5173",  # ✅ Allow local frontend during development
-    "http://localhost:5173",  # ✅ Allow local frontend during development
-    "http://localhost:5173",  # ✅ Allow local frontend during development
-    "http://localhost:5173",  # ✅ Allow local frontend during development
-    "http://localhost:5173",  # ✅ Allow local frontend during development
-    "http://localhost:5173",  # ✅ Allow local frontend during development
-    "http://localhost:5173",  # ✅ Allow local frontend during development
-    "http://localhost:5173",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=prod_origins,
     allow_credentials=True,
-    allow_methods=["*"],  # ✅ Allow all HTTP methods (GET, POST, etc.)
-    allow_headers=["*"],  # ✅ Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -89,6 +73,3 @@ app.include_router(
     prefix="/player_inventory_items",
     tags=["player_inventory_items"],
 )
-
-
-# app.include_router(test_routes.router, prefix="/tests", tags=["tests"])
