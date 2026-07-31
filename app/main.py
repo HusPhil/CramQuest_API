@@ -31,10 +31,12 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
-# CORS is restricted to the deployed frontend origins.
-# Replace with your own deployed frontend URL(s) — this is a placeholder.
+# CORS is restricted to the frontend origins from settings (CORS_ORIGINS env var,
+# comma-separated). Defaults to the local dev origin; set the deployed frontend URL(s).
 prod_origins = [
-    "http://localhost:5173",
+    origin.strip()
+    for origin in settings.CORS_ORIGINS.split(",")
+    if origin.strip()
 ]
 
 # Rate limiting middleware must sit INSIDE CORS so that 429 responses still

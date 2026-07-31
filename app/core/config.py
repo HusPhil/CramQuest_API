@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
     ACCESS_TOKEN_EXPIRE_DAYS: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_DAYS", 30))
 
+    # Comma-separated list of allowed CORS origins (the deployed frontend URL(s)).
+    # The default is the local dev frontend; set the real prod URL(s) in .env.
+    CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "http://localhost:5173")
+
     # Rate limiting (slowapi). Limits are per client IP. RATE_LIMIT_DEFAULT
     # applies globally to every endpoint; the auth-specific limits are stricter.
     RATE_LIMIT_ENABLED: bool = os.getenv("RATE_LIMIT_ENABLED", "true").lower() in (
