@@ -136,7 +136,9 @@ async def crud_resume_study_session(
     )
 
     if study_session is None:
-        return StudySessionResume(is_resumable=False)
+        return StudySessionResume(
+            is_resumable=False, current_time=datetime.now(timezone.utc)
+        )
 
     session_data = StudySessionRead(
         id=study_session.id,

@@ -1,5 +1,10 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from app.core.config import settings
 from app.core.database import create_db_and_tables
+from app.core.rate_limiter import limiter, rate_limit_exceeded_handler
 from app.api.v1.endpoints import (
     boss_battle_status_routes,
     player_inventory_item_routes,
@@ -15,21 +20,26 @@ from app.api.v1.endpoints import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 
-
 app = FastAPI(
     title="CramQuest API",
     version="1.0.0",
-    docs_url=None,  # Disable Swagger UI
-    redoc_url=None,  # Disable ReDoc
-    openapi_url=None,  # Disable OpenAPI schema
+    docs_url="/docs" if settings.ENV_DEV else None,  # Swagger UI only in dev
+    redoc_url="/redoc" if settings.ENV_DEV else None,  # ReDoc only in dev
+    openapi_url="/openapi.json" if settings.ENV_DEV else None,  # Schema only in dev
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
 # CORS is restricted to the deployed frontend origins.
 # Replace with your own deployed frontend URL(s) — this is a placeholder.
 prod_origins = [
-    "https://YOUR-FRONTEND-ORIGIN.example.com",
+    "http://localhost:5173",
 ]
 
+# Rate limiting middleware must sit INSIDE CORS so that 429 responses still
+# carry CORS headers (Starlette applies the last-added middleware outermost).
+app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=prod_origins,
@@ -43,11 +53,6 @@ app.add_middleware(
 async def on_startup():
     print("Starting up cramquest...")
     await create_db_and_tables()  # Automatically create missing tables
-
-
-@app.get("/")
-async def root():
-    return {"message": "Welcome to cramquest!"}
 
 
 app.include_router(auth_routes.router, prefix="/auth", tags=["auth"])

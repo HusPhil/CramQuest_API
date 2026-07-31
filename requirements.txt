@@ -9,6 +9,7 @@ pydantic-settings==2.8.1
 python-dotenv==1.0.1
 python-jose==3.4.0
 python-multipart==0.0.20
+slowapi==0.1.10
 sqlalchemy==2.0.39
 sqlmodel==0.0.24
 uvicorn==0.34.0

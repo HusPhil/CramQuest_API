@@ -5,7 +5,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import create_access_token, create_refresh_token
+from app.core.config import settings
 from app.core.database import get_session
+from app.core.rate_limiter import limiter
 from app.core.security import Security
 
 from app.crud.auth_crud import crud_sign_up_user
@@ -32,7 +34,9 @@ class InvalidCredential(HTTPException):
 
 
 @router.post("/sign_in")
+@limiter.limit(settings.RATE_LIMIT_SIGN_IN)
 async def sign_in(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(get_session),
 ) -> JSONResponse:
@@ -51,6 +55,7 @@ async def sign_in(
 
 
 @router.post("/sign_up")
+@limiter.limit(settings.RATE_LIMIT_SIGN_UP)
 async def sign_up(
     request: Request,
     sign_up_request: SignUpRequest,
@@ -77,6 +82,7 @@ async def sign_out() -> JSONResponse:
 
 
 @router.post("/refresh_session")
+@limiter.limit(settings.RATE_LIMIT_REFRESH_SESSION)
 async def refresh_session(request: Request, session: AsyncSession = Depends(get_session)):
     refresh_token = request.cookies.get(refresh_token_cookie_key)
 
@@ -96,11 +102,13 @@ async def refresh_session(request: Request, session: AsyncSession = Depends(get_
         user_complete_info
     )
 
-    return RefreshTokenResponse(
-        access_token=new_access_token,
-        user_session_info=user_session_info,
-        player_session_info=player_session_info,
-        profile_session_info=profile_session_info,
+    return JSONResponse(
+        content=RefreshTokenResponse(
+            access_token=new_access_token,
+            user_session_info=user_session_info,
+            player_session_info=player_session_info,
+            profile_session_info=profile_session_info,
+        ).model_dump(mode="json")
     )
 
 
