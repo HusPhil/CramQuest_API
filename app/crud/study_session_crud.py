@@ -70,8 +70,6 @@ async def crud_create_study_session(
 
     await _validate_new_study_session(session, new_study_session)
 
-    print(new_study_session)
-
     start_time = datetime.now(timezone.utc)
     end_time = start_time + timedelta(minutes=new_study_session.duration_mins)
 
@@ -281,7 +279,6 @@ async def crud_end_study_session(
 
     except Exception as e:
         await session.rollback()
-        print(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to end study session: {str(e)}",

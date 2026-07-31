@@ -56,7 +56,6 @@ async def boss_battle_end(
     battle_info: BossBattlEndInfo,
     session: Session = Depends(get_session),
 ):
-    print("Processing end of boss battle for player:", player_id, battle_info)
     return await crud_end_boss_battle(player_id, battle_info, session)
 
 

@@ -74,8 +74,6 @@ async def crud_start_boss_battle(
 async def crud_end_boss_battle(
     player_id: int, battle_info: BossBattlEndInfo, session: AsyncSession
 ) -> BossBattleEndRead:
-    print(f"\n\n\n\n\n{battle_info}\n\n\n\n\n")
-
     result = await session.execute(
         select(BossBattleStatus).where(BossBattleStatus.id == battle_info.id)
     )

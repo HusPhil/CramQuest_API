@@ -33,8 +33,6 @@ class SubjectNotBelongsToPlayer(HTTPException):
 async def crud_create_subject(
     session: AsyncSession, player_id: int, new_subject: SubjectCreate
 ) -> SubjectRead:
-    print(f"Creating subject for player_id: {player_id}")
-    print(f"New subject: {new_subject}")
     await _validate_new_subject(session, player_id, new_subject)
 
     subject = Subject(

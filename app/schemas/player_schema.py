@@ -1,6 +1,5 @@
 from datetime import date
 from pydantic import BaseModel, Field
-from webob import week
 from app.models.player_model import PlayerTitle
 from typing import Optional
 

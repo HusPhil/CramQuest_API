@@ -37,9 +37,6 @@ class Security:
                 raise HTTPException(status_code=401, detail="Invalid refresh token")
             return TokenVerificationResult(user_id=user_id, player_id=player_id)
         except ExpiredSignatureError:
-            # Don't re-raise ExpiredSignatureError, raise HTTPException instead
-            print("Refresh token has expired")
             raise HTTPException(status_code=401, detail="Session expired")
-        except JWTError as e:  # Catch the actual exception instance
-            print("JWTError:", e)  # Log the actual error, not the class
+        except JWTError:
             raise HTTPException(status_code=401, detail="Invalid refresh token")

@@ -48,7 +48,7 @@ target_metadata = SQLModel.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-connectable = create_async_engine(settings.DATABASE_URL, echo=True, future=True)
+connectable = create_async_engine(settings.DATABASE_URL, future=True)
 
 
 def run_migrations_offline() -> None:

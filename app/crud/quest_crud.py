@@ -30,8 +30,6 @@ async def crud_create_quest(session: AsyncSession, new_quest: QuestCreate) -> Qu
     """Create a new quest with validation"""
     # Check for existing quest
 
-    print("Creating new quest...", new_quest)
-
     await _validate_new_quest(session, new_quest)
 
     # Create new quest
@@ -131,7 +129,6 @@ async def crud_read_all_quests(session: AsyncSession) -> list[QuestRead]:
 
 async def crud_delete_quest(session: AsyncSession, quest_id: int) -> None:
     quest = await _get_quest_or_error(session, quest_id)
-    print("\n\n\n\n\n\nquest:", quest, "\n\n\n\n\n\n\n")
     try:
         await session.delete(quest)
         await session.commit()

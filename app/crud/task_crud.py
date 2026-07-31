@@ -67,12 +67,8 @@ async def crud_sync_task_timings(
         """
         )
 
-        print(query)
-
         await session.execute(query, params)
         await session.commit()
-
-        print("updated", len(task_ids))
 
         return task_timing_batch_payload.root
 

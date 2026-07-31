@@ -1,6 +1,5 @@
-from anyio import current_time
 from pydantic import BaseModel, Field
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 from datetime import datetime
 from app.models.study_session_model import SessionStatus
 from app.schemas.quest_schema import QuestRead

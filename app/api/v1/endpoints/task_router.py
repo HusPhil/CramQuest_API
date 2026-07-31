@@ -47,5 +47,4 @@ async def sync_task_timings(
     ),
     session: AsyncSession = Depends(get_session),
 ):
-    print(task_timing_batch_payload)
     return await crud_sync_task_timings(session, task_timing_batch_payload)

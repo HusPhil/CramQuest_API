@@ -96,7 +96,6 @@ async def crud_read_player_boss_availability_counter(
 async def crud_read_all_player_subjects(
     session: AsyncSession, player_id: int
 ) -> List[SubjectRead]:
-    print(f"Fetching subjects for player_id: {player_id}")
     player: Player = await _get_player_with_subject_or_error(session, player_id)
 
     return [

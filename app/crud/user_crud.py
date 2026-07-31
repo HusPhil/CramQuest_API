@@ -51,8 +51,6 @@ async def crud_read_user_by_id(session: AsyncSession, user_id: int) -> UserRead:
 
 
 async def crud_read_user_player(session: AsyncSession, user_id: int) -> PlayerRead:
-    print("\n\n\n\n\n\n\n\nuser_id\n\n\n\n\n\n\n\n\n\n\n\n", user_id)
-
     user_player = await _get_user_player_or_404(session, user_id)
 
     return PlayerRead(
@@ -81,7 +79,7 @@ async def crud_read_user_by_username(session: AsyncSession, username: str) -> Us
     )
 
     user = result.scalar_one_or_none()
-    print("user", user)
+
     if not user:
         raise UserNotFound
 
