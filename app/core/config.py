@@ -33,6 +33,11 @@ class Settings(BaseSettings):
     # The default is the local dev frontend; set the real prod URL(s) in .env.
     CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "http://localhost:5173")
 
+    # Heartbeat ("swords_up") endpoint: shared secret API key (empty = disabled)
+    # and per-IP rate limit.
+    SWORDS_UP_API_KEY: str = os.getenv("SWORDS_UP_API_KEY", "")
+    SWORDS_UP_RATE_LIMIT: str = os.getenv("SWORDS_UP_RATE_LIMIT", "2 per 10 minutes")
+
     # Rate limiting (slowapi). Limits are per client IP. RATE_LIMIT_DEFAULT
     # applies globally to every endpoint; the auth-specific limits are stricter.
     RATE_LIMIT_ENABLED: bool = os.getenv("RATE_LIMIT_ENABLED", "true").lower() in (

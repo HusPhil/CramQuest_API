@@ -17,6 +17,7 @@ from app.api.v1.endpoints import (
     study_session_routes,
     quest_routes,
     weekly_checkin_routes,
+    swords_up_routes,
 )
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -58,6 +59,7 @@ async def on_startup():
 
 
 app.include_router(auth_routes.router, prefix="/auth", tags=["auth"])
+app.include_router(swords_up_routes.router, prefix="/swords_up", tags=["swords_up"])
 app.include_router(user_routes.router, prefix="/users", tags=["users"])
 app.include_router(player_routes.router, prefix="/players", tags=["players"])
 app.include_router(profile_routes.router, prefix="/profiles", tags=["profiles"])
