@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlmodel import Session
 from typing import List
 from app.core.database import get_session
@@ -37,8 +37,6 @@ async def read_all_players(
     session: Session = Depends(get_session),
     admin_user: User = Depends(get_current_admin),
 ):
-    if not admin_user.is_admin:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
     return await crud_read_all_players_with_users(session)
 
 

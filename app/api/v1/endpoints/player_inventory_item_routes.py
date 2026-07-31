@@ -3,7 +3,7 @@ from sqlmodel import Session
 from typing import List
 
 from app.core.database import get_session
-from app.core.auth import get_current_user
+from app.core.auth import get_current_admin, get_current_user
 from app.crud.player_inventory_item_crud import (
     crud_equip_skin,
     crud_get_rewards,
@@ -22,12 +22,16 @@ from app.schemas.player_inventory_item_schema import (
     EquipSkinRequest,
 )
 from app.schemas.reward_schema import RewardItemRead
+from app.models import User
 
 router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 @router.get("/rewards", response_model=List[RewardItemRead])
-async def get_rewards(session: Session = Depends(get_session)):
+async def get_rewards(
+    session: Session = Depends(get_session),
+    admin_user: User = Depends(get_current_admin),
+):
     return await crud_get_rewards(session)
 
 

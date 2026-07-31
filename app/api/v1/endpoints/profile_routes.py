@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_session
-from app.core.auth import get_current_user
+from app.core.auth import get_current_admin, get_current_user
 from app.schemas.profile_schema import ProfileCreate, ProfileRead, ProfileUpdate
 from app.crud.profile_crud import crud_create_profile, crud_read_profile, crud_read_all_profiles, crud_update_profile
+from app.models import User
 
 # router = APIRouter()
 router = APIRouter(dependencies=[Depends(get_session), Depends(get_current_user)])
@@ -17,7 +18,10 @@ async def read_profile(profile_id: int, session: AsyncSession = Depends(get_sess
     return await crud_read_profile(session, profile_id)
 
 @router.get("/", response_model=list[ProfileRead])
-async def read_all_profiles(session: AsyncSession = Depends(get_session)):
+async def read_all_profiles(
+    session: AsyncSession = Depends(get_session),
+    admin_user: User = Depends(get_current_admin),
+):
     return await crud_read_all_profiles(session)
 
 @router.patch("/{profile_id}", response_model=ProfileRead)

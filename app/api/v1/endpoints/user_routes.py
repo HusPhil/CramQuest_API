@@ -10,7 +10,8 @@ from app.crud.user_crud import (
     crud_delete_user,
     crud_read_user_player,
 )
-from app.core.auth import get_current_user
+from app.core.auth import get_current_admin, get_current_user
+from app.models import User
 
 from app.schemas.player_schema import PlayerRead
 
@@ -44,7 +45,10 @@ async def read_user_player(user_id: int, session: AsyncSession = Depends(get_ses
 
 
 @router.get("/", response_model=list[UserRead])
-async def read_all_users(session: AsyncSession = Depends(get_session)):
+async def read_all_users(
+    session: AsyncSession = Depends(get_session),
+    admin_user: User = Depends(get_current_admin),
+):
     return await crud_read_all_users(session)
 
 

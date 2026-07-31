@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_session
-from app.core.auth import get_current_user
+from app.core.auth import get_current_admin, get_current_user
 from app.models.user_model import User
 from app.schemas.study_session_schema import (
     StudySessionEnd,
@@ -29,7 +29,10 @@ async def create_study_session(
 
 
 @router.get("/", response_model=list[StudySessionRead])
-async def read_all_study_sessions(session: AsyncSession = Depends(get_session)):
+async def read_all_study_sessions(
+    session: AsyncSession = Depends(get_session),
+    admin_user: User = Depends(get_current_admin),
+):
     return await crud_read_all_study_sessions(session)
 
 
