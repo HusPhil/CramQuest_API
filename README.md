@@ -85,3 +85,8 @@ Routers are mounted WITHOUT an `/api/v1` prefix:
 - **Refresh token**: HttpOnly, Secure, SameSite=None cookie (`_Host-cramquest_ssfpwrtk`)
 - JWT payloads carry both `user_id` and `player_id`; endpoints reject tokens missing either
 - Passwords are hashed with bcrypt — never stored in plaintext
+
+## Frontend Setup
+
+To set up the frontend, refer to the [CramQuest Repository](https://github.com/HusPhil/cram_quest).
+
